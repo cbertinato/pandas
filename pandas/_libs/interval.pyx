@@ -68,7 +68,9 @@ cdef class Interval(IntervalMixin):
         # note: it is faster to just do these checks than to use a special
         # constructor (__cinit__/__new__) to avoid them
         if closed not in _VALID_CLOSED:
-            raise ValueError("invalid option for 'closed': %s" % closed)
+            # raise ValueError("invalid option for 'closed': %s" % closed)
+            raise ValueError("invalid option for 'closed': {arg1}".format(
+                arg1=closed))
         if not left <= right:
             raise ValueError('left side of interval must be <= right side')
         self.left = left
@@ -102,8 +104,9 @@ cdef class Interval(IntervalMixin):
         else:
             op_str = {Py_LT: '<', Py_LE: '<=', Py_GT: '>', Py_GE: '>='}[op]
             raise TypeError(
-                'unorderable types: %s() %s %s()' %
-                (type(self).__name__, op_str, type(other).__name__))
+                'unorderable types: {arg1}() {arg2} {arg3}()'.format(
+                arg1=type(self).__name__, arg2=op_str,
+                arg3=type(other).__name__))
 
     def __reduce__(self):
         args = (self.left, self.right, self.closed)
@@ -123,15 +126,17 @@ cdef class Interval(IntervalMixin):
     def __repr__(self):
 
         left, right = self._repr_base()
-        return ('%s(%r, %r, closed=%r)' %
-                (type(self).__name__, left, right, self.closed))
+        return ('{arg1}({arg2!r}, {arg3!r}, closed={arg4!r})'.format(
+                arg1=type(self).__name__, arg2=left, arg3=right,
+                arg4=self.closed))
 
     def __str__(self):
 
         left, right = self._repr_base()
         start_symbol = '[' if self.closed_left else '('
         end_symbol = ']' if self.closed_right else ')'
-        return '%s%s, %s%s' % (start_symbol, left, right, end_symbol)
+        return '{arg1}{arg2}, {arg3}{arg4}'.format(arg1=start_symbol,
+            arg2=left, arg3=right, arg4=end_symbol)
 
     def __add__(self, y):
         if isinstance(y, numbers.Number):
@@ -200,8 +205,8 @@ cpdef intervals_to_interval_bounds(ndarray intervals):
             continue
 
         if not isinstance(interval, Interval):
-            raise TypeError("type {} with value {} is not an interval".format(
-                type(interval), interval))
+            raise TypeError("type {arg1} with value {arg2} is not an interval".
+                format(arg1=type(interval), arg2=interval))
 
         left[i] = interval.left
         right[i] = interval.right

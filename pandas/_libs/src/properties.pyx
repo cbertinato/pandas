@@ -38,7 +38,8 @@ cdef class cache_readonly(object):
     def __set__(self, obj, value):
 
         if not self.allow_setting:
-            raise Exception("cannot set values for [%s]" % self.name)
+            raise Exception("cannot set values for [{name}]".format(
+                name=self.name))
 
         # Get the cache or set a default one if needed
         cache = getattr(obj, '_cache', None)

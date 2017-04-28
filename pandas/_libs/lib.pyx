@@ -1768,7 +1768,7 @@ cdef class BlockPlacement:
         else:
             v = self._as_array
 
-        return '%s(%r)' % (self.__class__.__name__, v)
+        return '{name}({v!r})'.format(name=self.__class__.__name__, v=v)
 
     __repr__ = __str__
 

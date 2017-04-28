@@ -68,7 +68,6 @@ cdef class Interval(IntervalMixin):
         # note: it is faster to just do these checks than to use a special
         # constructor (__cinit__/__new__) to avoid them
         if closed not in _VALID_CLOSED:
-            # raise ValueError("invalid option for 'closed': %s" % closed)
             raise ValueError("invalid option for 'closed': {arg1}".format(
                 arg1=closed))
         if not left <= right:

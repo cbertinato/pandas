@@ -1278,22 +1278,26 @@ cdef class _Timestamp(datetime):
 
     property _repr_base:
         def __get__(self):
-            return '%s %s' % (self._date_repr, self._time_repr)
+            return '{date} {time}'.format(date=self._date_repr,
+                time=self._time_repr)
 
     property _date_repr:
         def __get__(self):
             # Ideal here would be self.strftime("%Y-%m-%d"), but
             # the datetime strftime() methods require year >= 1900
-            return '%d-%.2d-%.2d' % (self.year, self.month, self.day)
+            return '{year:d}-{month:.2d}-{day:.2d}'.format(year=self.year,
+                month=self.month, day=self.day)
 
     property _time_repr:
         def __get__(self):
-            result = '%.2d:%.2d:%.2d' % (self.hour, self.minute, self.second)
+            result = '{hour:.2d}:{min:.2d}:{sec:.2d}'.format(hour=self.hour,
+                min=self.minute, sec=self.second)
 
             if self.nanosecond != 0:
-                result += '.%.9d' % (self.nanosecond + 1000 * self.microsecond)
+                result += '.{arg1:.9d}'.format(arg1=self.nanosecond +
+                    1000 * self.microsecond)
             elif self.microsecond != 0:
-                result += '.%.6d' % self.microsecond
+                result += '.{arg1:6d}'.format(arg1=self.microsecond)
 
             return result
 
@@ -1359,8 +1363,9 @@ cdef class _NaT(_Timestamp):
             if isinstance(other, np.datetime64):
                 other = Timestamp(other)
             else:
-                raise TypeError('Cannot compare type %r with type %r' %
-                                (type(self).__name__, type(other).__name__))
+                raise TypeError('Cannot compare type {type1!r} with type \
+                    {type2!r}'.format(type1=type(self).__name__,
+                    type2=type(other).__name__))
         return PyObject_RichCompare(other, self, _reverse_ops[op])
 
     def __add__(self, other):
@@ -1526,8 +1531,8 @@ cdef convert_to_tsobject(object ts, object tz, object unit,
             "Cannot convert Period to Timestamp "
             "unambiguously. Use to_timestamp")
     else:
-        raise TypeError('Cannot convert input [{}] of type {} to '
-                        'Timestamp'.format(ts, type(ts)))
+        raise TypeError('Cannot convert input [{input}] of type {type} to '
+                        'Timestamp'.format(input=ts, type=type(ts)))
 
     if obj.value != NPY_NAT:
         _check_dts_bounds(&obj.dts)
@@ -1768,12 +1773,16 @@ cdef inline _check_dts_bounds(pandas_datetimestruct *dts):
         error = True
 
     if error:
-        fmt = '%d-%.2d-%.2d %.2d:%.2d:%.2d' % (dts.year, dts.month,
-                                               dts.day, dts.hour,
-                                               dts.min, dts.sec)
+        fmt = '{year:d}-{month:.2d}-{day:.2d} {hour:.2d}:{min:.2d}:{sec:.2d}'.
+                                                        format(year=dts.year,
+                                                        month=dts.month,
+                                                        day=dts.day,
+                                                        hour=dts.hour,
+                                                        min=dts.min,
+                                                        sec=dts.sec)
 
         raise OutOfBoundsDatetime(
-            'Out of bounds nanosecond timestamp: %s' % fmt)
+            'Out of bounds nanosecond timestamp: {arg1}'.format(arg1=fmt))
 
 
 def datetime_to_datetime64(ndarray[object] values):
@@ -1808,7 +1817,8 @@ def datetime_to_datetime64(ndarray[object] values):
                 iresult[i] = _pydatetime_to_dts(val, &dts)
                 _check_dts_bounds(&dts)
         else:
-            raise TypeError('Unrecognized value type: %s' % type(val))
+            raise TypeError('Unrecognized value type: {type}'.format(
+                                                              type=type(val)))
 
     return result, inferred_tz
 
@@ -1882,20 +1892,21 @@ def format_array_from_datetime(ndarray[int64_t] values, object tz=None,
         elif basic_format:
 
             pandas_datetime_to_datetimestruct(val, PANDAS_FR_ns, &dts)
-            res = '%d-%.2d-%.2d %.2d:%.2d:%.2d' % (dts.year,
-                                                   dts.month,
-                                                   dts.day,
-                                                   dts.hour,
-                                                   dts.min,
-                                                   dts.sec)
+            res = '{year:d}-{month:.2d}-{day:.2d} '
+                  '{hour:.2d}:{min:.2d}:{sec:.2d}'.format(year=dts.year,
+                                                          month=dts.month,
+                                                          day=dts.day,
+                                                          hour=dts.hour,
+                                                          min=dts.min,
+                                                          sec=dts.sec)
 
             if show_ns:
                 ns = dts.ps / 1000
-                res += '.%.9d' % (ns + 1000 * dts.us)
+                res += '.{nano:.9d}'.format(nano=ns + 1000 * dts.us)
             elif show_us:
-                res += '.%.6d' % dts.us
+                res += '.{micro:.6d}'.format(micro=dts.us)
             elif show_ms:
-                res += '.%.3d' % (dts.us /1000)
+                res += '.{milli:.3d}'.format(milli=dts.us / 1000)
 
             result[i] = res
 
@@ -1992,7 +2003,7 @@ def parse_datetime_string_with_reso(object date_string, object freq=None,
         # TODO: allow raise of errors within instead
         raise DateParseError(e)
     if parsed is None:
-        raise DateParseError("Could not parse %s" % date_string)
+        raise DateParseError("Could not parse {date}".format(date=date_string))
     return parsed, parsed, reso
 
 
@@ -2921,17 +2932,20 @@ class Timedelta(_Timedelta):
 
         # show everything
         if format == 'all':
-            seconds_pretty = "%02d.%03d%03d%03d" % (
-                self._s, self._ms, self._us, self._ns)
-            return "%s%d days%s%02d:%02d:%s" % (sign_pretty, self._d,
-                                                sign2_pretty, self._h,
-                                                self._m, seconds_pretty)
+            seconds_pretty = "{s:02d}.{ms:03d}{us:03d}{ns:03d}".format(
+                s=self._s, ms=self._ms, us=self._us, ns=self._ns)
+
+            return "{sign1}{day:d} days{sign2}{hour:02d}:{min:02d}:{sec}"
+                .format(sign1=sign_pretty, day=self._d, sign2=sign2_pretty,
+                hour=self._h, min=self._m, sec=seconds_pretty)
+
 
         # by default not showing nano
         if self._ms or self._us or self._ns:
-            seconds_pretty = "%02d.%03d%03d" % (self._s, self._ms, self._us)
+            seconds_pretty = "{sec:02d}.{msec:03d}{usec:03d}".format(
+                sec=self._s, msec=self._ms, usec=self._us)
         else:
-            seconds_pretty = "%02d" % self._s
+            seconds_pretty = "{sec:02d}".format(sec=self._s)
 
         # if we have a partial day
         subs = (self._h or self._m or self._s or
@@ -2939,7 +2953,8 @@ class Timedelta(_Timedelta):
 
         if format == 'even_day':
             if not subs:
-                return "%s%d days" % (sign_pretty, self._d)
+                return "{sign}{day:d} days".format(sign=sign_pretty,
+                                                   day=self._d)
 
         elif format == 'sub_day':
             if not self._d:
@@ -2947,17 +2962,19 @@ class Timedelta(_Timedelta):
                 # degenerate, don't need the extra space
                 if self._sign > 0:
                     sign2_pretty = ""
-                return "%s%s%02d:%02d:%s" % (sign_pretty, sign2_pretty,
-                                             self._h, self._m, seconds_pretty)
+                return "{sign1}{sign2}{hour:02d}:{min:02d}:{sec}".format(
+                    sign1=sign_pretty, sign2=sign2_pretty, hour=self._h,
+                    min=self._m, sec=seconds_pretty)
 
         if subs or format=='long':
-            return "%s%d days%s%02d:%02d:%s" % (sign_pretty, self._d,
-                                                sign2_pretty, self._h,
-                                                self._m, seconds_pretty)
-        return "%s%d days" % (sign_pretty, self._d)
+            return "{sign1}{day:d} days{sign2}{hour:02d}:{min:02d}:{sec}"
+                .format(sign1=sign_pretty, day=self._d, sign2=sign2_pretty,
+                hour=self._h, min=self._m, sec=seconds_pretty)
+
+        return "{sign}{day:d} days".format(sign=sign_pretty, day=self._d)
 
     def __repr__(self):
-        return "Timedelta('{0}')".format(self._repr_base(format='long'))
+        return "Timedelta('{arg1}')".format(arg1=self._repr_base(format='long'))
     def __str__(self):
         return self._repr_base(format='long')
 
@@ -3169,7 +3186,7 @@ class Timedelta(_Timedelta):
 
         # integers or floats
         if is_integer_object(other) or is_float_object(other):
-            return Timedelta(self.value /other, unit='ns')
+            return Timedelta(self.value / other, unit='ns')
 
         if not self._validate_ops_compat(other):
             return NotImplemented
@@ -3351,7 +3368,7 @@ cdef inline timedelta_from_spec(object number, object frac, object unit):
         unit = ''.join(unit)
         unit = timedelta_abbrevs[unit.lower()]
     except KeyError:
-        raise ValueError("invalid abbreviation: {0}".format(unit))
+        raise ValueError("invalid abbreviation: {unit}".format(unit=unit))
 
     n = ''.join(number) + '.' + ''.join(frac)
     return cast_from_unit(float(n), unit)
@@ -3444,7 +3461,7 @@ cdef inline parse_timedelta_string(object ts):
                 have_hhmmss = 1
             else:
                 raise ValueError("expecting hh:mm:ss format, "
-                                 "received: {0}".format(ts))
+                                 "received: {ts}".format(ts=ts))
 
             unit, number = [], []
 
@@ -3579,7 +3596,7 @@ cpdef convert_to_timedelta64(object ts, object unit):
         ts = np.timedelta64(ts)
     elif not isinstance(ts, np.timedelta64):
         raise ValueError("Invalid type for timedelta "
-                         "scalar: %s" % type(ts))
+                         "scalar: {type}".format(type=type(ts)))
     return ts.astype('timedelta64[ns]')
 
 
@@ -3628,11 +3645,12 @@ def array_strptime(ndarray[object] values, object fmt,
                 if bad_directive == "\\":
                     bad_directive = "%"
                 del err
-                raise ValueError("'%s' is a bad directive in format '%s'" %
-                                    (bad_directive, fmt))
+                raise ValueError("'{dir}' is a bad directive in format \
+                                  '{fmt}'".format(dir=bad_directive,
+                                  fmt=fmt))
             # IndexError only occurs when the format string is "%"
             except IndexError:
-                raise ValueError("stray %% in format '%s'" % fmt)
+                raise ValueError("stray %% in format '{fmt}'".format(fmt=fmt))
             _regex_cache[fmt] = format_regex
 
     result = np.empty(n, dtype='M8[ns]')
@@ -3683,14 +3701,15 @@ def array_strptime(ndarray[object] values, object fmt,
                 if is_coerce:
                     iresult[i] = NPY_NAT
                     continue
-                raise ValueError("time data %r does not match "
-                                 "format %r (match)" % (values[i], fmt))
+                raise ValueError("time data {data!r} does not match "
+                                 "format {fmt!r} (match)".format(
+                                 date=values[i], fmt=fmt))
             if len(val) != found.end():
                 if is_coerce:
                     iresult[i] = NPY_NAT
                     continue
-                raise ValueError("unconverted data remains: %s" %
-                                  values[i][found.end():])
+                raise ValueError("unconverted data remains: {data}".format(
+                                  data=values[i][found.end():]))
 
         # search
         else:
@@ -3699,8 +3718,9 @@ def array_strptime(ndarray[object] values, object fmt,
                 if is_coerce:
                     iresult[i] = NPY_NAT
                     continue
-                raise ValueError("time data %r does not match format "
-                                 "%r (search)" % (values[i], fmt))
+                raise ValueError("time data {data!r} does not match format "
+                                 "{fmt!r} (search)".format(data=values[i],
+                                 fmt=fmt))
 
         year = 1900
         month = day = 1
@@ -4014,7 +4034,7 @@ cpdef inline int64_t cast_from_unit(object ts, object unit) except? -1:
         m = 1L
         p = 0
     else:
-        raise ValueError("cannot cast unit {0}".format(unit))
+        raise ValueError("cannot cast unit {unit}".format(unit=unit))
 
     # just give me the unit back
     if ts is None:
@@ -4526,8 +4546,8 @@ def tz_localize_to_utc(ndarray[int64_t] vals, object tz, object ambiguous=None,
         if trans_idx.size == 1:
             stamp = Timestamp(vals[trans_idx])
             raise pytz.AmbiguousTimeError(
-                "Cannot infer dst time from %s as there "
-                "are no repeated times" % stamp)
+                "Cannot infer dst time from {stamp} as there "
+                "are no repeated times".format(stamp=stamp))
         # Split the array into contiguous chunks (where the difference between
         # indices is 1).  These are effectively dst transitions in different
         # years which is useful for checking that there is not an ambiguous
@@ -4551,8 +4571,8 @@ def tz_localize_to_utc(ndarray[int64_t] vals, object tz, object ambiguous=None,
                 switch_idx = (delta <= 0).nonzero()[0]
                 if switch_idx.size > 1:
                     raise pytz.AmbiguousTimeError(
-                        "There are %i dst switches when "
-                        "there should only be 1." % switch_idx.size)
+                        "There are {switches:d} dst switches when "
+                        "there should only be 1.".format(switches=switch_idx.size))
                 switch_idx = switch_idx[0] + 1 # Pull the only index and adjust
                 a_idx = grp[:switch_idx]
                 b_idx = grp[switch_idx:]
@@ -4579,8 +4599,8 @@ def tz_localize_to_utc(ndarray[int64_t] vals, object tz, object ambiguous=None,
                 else:
                     stamp = Timestamp(vals[i])
                     raise pytz.AmbiguousTimeError(
-                        "Cannot infer dst time from %r, try using the "
-                        "'ambiguous' argument" % stamp)
+                        "Cannot infer dst time from {stamp!r}, try using the "
+                        "'ambiguous' argument".format(stamp=stamp))
         elif left != NPY_NAT:
             result[i] = left
         elif right != NPY_NAT:
@@ -4894,7 +4914,8 @@ def get_start_end_field(ndarray[int64_t] dtindex, object field,
     if freqstr:
         if freqstr == 'C':
             raise ValueError(
-                "Custom business days is not supported by %s" % field)
+                "Custom business days is not supported by {field}".format(
+                                                                  field=field))
         is_business = freqstr[0] == 'B'
 
         # YearBegin(), BYearBegin() use month = starting month of year.
@@ -5101,7 +5122,7 @@ def get_start_end_field(ndarray[int64_t] dtindex, object field,
                     out[i] = 1
             return out.view(bool)
 
-    raise ValueError("Field %s not supported" % field)
+    raise ValueError("Field {field} not supported".format(field=field))
 
 
 @cython.wraparound(False)
@@ -5135,7 +5156,7 @@ def get_date_name_field(ndarray[int64_t] dtindex, object field):
             out[i] = _dayname[dow]
         return out
 
-    raise ValueError("Field %s not supported" % field)
+    raise ValueError("Field {field} not supported".format(field=field))
 
 
 cdef inline int m8_weekday(int64_t val):

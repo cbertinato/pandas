@@ -1109,9 +1109,9 @@ cdef class _Timestamp(datetime):
         except:
             pass
 
-        tz = ", tz='{0}'".format(zone) if zone is not None else ""
-        freq = ", freq='{0}'".format(
-            self.freq.freqstr) if self.freq is not None else ""
+        tz = ", tz='{zone}'".format(zone=zone) if zone is not None else ""
+        freq = ", freq='{freq}'".format(
+            freq=self.freq.freqstr) if self.freq is not None else ""
 
         return "Timestamp('{stamp}'{tz}{freq})".format(
             stamp=stamp, tz=tz, freq=freq)

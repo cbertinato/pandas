@@ -307,8 +307,8 @@ def period_format(int64_t value, int freq, object fmt=None):
         elif freq_group == 4000: # WK
             left = period_asfreq(value, freq, 6000, 0)
             right = period_asfreq(value, freq, 6000, 1)
-            return '%s/%s' % (period_format(left, 6000),
-                              period_format(right, 6000))
+            return '{left}/{right}'.format(left=period_format(left, 6000),
+                              right=period_format(right, 6000))
         elif (freq_group == 5000 # BUS
               or freq_group == 6000): # DAY
             fmt = b'%Y-%m-%d'
@@ -701,7 +701,8 @@ cdef class _Period(object):
 
         if freq.n <= 0:
             raise ValueError('Frequency must be positive, because it'
-                             ' represents span: {0}'.format(freq.freqstr))
+                             ' represents span: {freq}'.format(
+                             freq=freq.freqstr))
 
         return freq
 
@@ -751,8 +752,8 @@ cdef class _Period(object):
                 if nanos % offset_nanos == 0:
                     ordinal = self.ordinal + (nanos // offset_nanos)
                     return Period(ordinal=ordinal, freq=self.freq)
-            msg = 'Input cannot be converted to Period(freq={0})'
-            raise IncompatibleFrequency(msg.format(self.freqstr))
+            msg = 'Input cannot be converted to Period(freq={freq})'
+            raise IncompatibleFrequency(msg.format(freq=self.freqstr))
         elif isinstance(other, offsets.DateOffset):
             freqstr = other.rule_code
             base = frequencies.get_base_alias(freqstr)
@@ -949,7 +950,8 @@ cdef class _Period(object):
     def __repr__(self):
         base, mult = frequencies.get_freq_code(self.freq)
         formatted = period_format(self.ordinal, base)
-        return "Period('%s', '%s')" % (formatted, self.freqstr)
+        return "Period('{fmt}', '{freq}')".format(fmt=formatted,
+            freq=self.freqstr)
 
     def __unicode__(self):
         """
@@ -960,7 +962,7 @@ cdef class _Period(object):
         """
         base, mult = frequencies.get_freq_code(self.freq)
         formatted = period_format(self.ordinal, base)
-        value = ("%s" % formatted)
+        value = ("{fmt}".format(fmt=formatted))
         return value
 
     def __setstate__(self, state):
@@ -1197,7 +1199,8 @@ class Period(_Period):
                     freq = frequencies.Resolution.get_freq(reso)
                 except KeyError:
                     raise ValueError(
-                        "Invalid frequency or could not infer: %s" % reso)
+                        "Invalid frequency or could not infer: {freq}".format(
+                            freq=reso)
 
         elif isinstance(value, datetime):
             dt = value

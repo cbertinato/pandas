@@ -1200,7 +1200,7 @@ class Period(_Period):
                 except KeyError:
                     raise ValueError(
                         "Invalid frequency or could not infer: {freq}".format(
-                            freq=reso)
+                            freq=reso))
 
         elif isinstance(value, datetime):
             dt = value

@@ -1773,13 +1773,9 @@ cdef inline _check_dts_bounds(pandas_datetimestruct *dts):
         error = True
 
     if error:
-        fmt = '{year:d}-{month:.2d}-{day:.2d} {hour:.2d}:{min:.2d}:{sec:.2d}'
-                                                        .format(year=dts.year,
-                                                        month=dts.month,
-                                                        day=dts.day,
-                                                        hour=dts.hour,
-                                                        min=dts.min,
-                                                        sec=dts.sec)
+        fmt = ('{year:d}-{month:.2d}-{day:.2d} {hour:.2d}:{min:.2d}:{sec:.2d}'
+                .format(year=dts.year, month=dts.month, day=dts.day,
+                        hour=dts.hour, min=dts.min, sec=dts.sec))
 
         raise OutOfBoundsDatetime(
             'Out of bounds nanosecond timestamp: {arg1}'.format(arg1=fmt))
@@ -3595,8 +3591,8 @@ cpdef convert_to_timedelta64(object ts, object unit):
     if isinstance(ts, timedelta):
         ts = np.timedelta64(ts)
     elif not isinstance(ts, np.timedelta64):
-        raise ValueError("Invalid type for timedelta scalar: {type}".format(
-            type=type(ts)))
+        raise ValueError("Invalid type for timedelta scalar: {type}"
+                          .format(type=type(ts)))
     return ts.astype('timedelta64[ns]')
 
 
@@ -3646,7 +3642,7 @@ def array_strptime(ndarray[object] values, object fmt,
                     bad_directive = "%"
                 del err
                 raise ValueError("'{dir}' is a bad directive in format '{fmt}'"
-                    .format(dir=bad_directive, fmt=fmt))
+                                  .format(dir=bad_directive, fmt=fmt))
             # IndexError only occurs when the format string is "%"
             except IndexError:
                 raise ValueError("stray %% in format '{fmt}'".format(fmt=fmt))
@@ -3717,9 +3713,9 @@ def array_strptime(ndarray[object] values, object fmt,
                 if is_coerce:
                     iresult[i] = NPY_NAT
                     continue
-                raise ValueError("time data {data!r} does not match format \
-                                 {fmt!r} (search)".format(data=values[i],
-                                 fmt=fmt))
+                raise ValueError("time data {data!r} does not match format "
+                                 "{fmt!r} (search)".format(data=values[i],
+                                                            fmt=fmt))
 
         year = 1900
         month = day = 1
@@ -4598,8 +4594,8 @@ def tz_localize_to_utc(ndarray[int64_t] vals, object tz, object ambiguous=None,
                 else:
                     stamp = Timestamp(vals[i])
                     raise pytz.AmbiguousTimeError(
-                        "Cannot infer dst time from {stamp!r}, try using the \
-                        'ambiguous' argument".format(stamp=stamp))
+                        "Cannot infer dst time from {stamp!r}, try using the "
+                        "'ambiguous' argument".format(stamp=stamp))
         elif left != NPY_NAT:
             result[i] = left
         elif right != NPY_NAT:

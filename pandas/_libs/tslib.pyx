@@ -1888,13 +1888,13 @@ def format_array_from_datetime(ndarray[int64_t] values, object tz=None,
         elif basic_format:
 
             pandas_datetime_to_datetimestruct(val, PANDAS_FR_ns, &dts)
-            res = '{year:d}-{month:.2d}-{day:.2d} '
-                  '{hour:.2d}:{min:.2d}:{sec:.2d}'.format(year=dts.year,
+            res = ('{year:d}-{month:.2d}-{day:.2d} '
+                   '{hour:.2d}:{min:.2d}:{sec:.2d}'.format(year=dts.year,
                                                           month=dts.month,
                                                           day=dts.day,
                                                           hour=dts.hour,
                                                           min=dts.min,
-                                                          sec=dts.sec)
+                                                          sec=dts.sec))
 
             if show_ns:
                 ns = dts.ps / 1000

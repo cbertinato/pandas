@@ -96,8 +96,8 @@ class AbstractMethodError(NotImplementedError):
         self.class_instance = class_instance
 
     def __str__(self):
-        return ("This method must be defined in the concrete class of %s" %
-                self.class_instance.__class__.__name__)
+        return ("This method must be defined in the concrete class of {name}"
+                .format(name=self.class_instance.__class__.__name__))
 
 
 def flatten(l):
@@ -150,8 +150,8 @@ def _maybe_match_name(a, b):
 def _get_info_slice(obj, indexer):
     """Slice the info axis of `obj` with `indexer`."""
     if not hasattr(obj, '_info_axis_number'):
-        raise TypeError('object of type %r has no info axis' %
-                        type(obj).__name__)
+        raise TypeError('object of type {name!r} has no info axis'.format(
+                        name=type(obj).__name__))
     slices = [slice(None)] * obj.ndim
     slices[obj._info_axis_number] = indexer
     return tuple(slices)
@@ -214,8 +214,8 @@ def _mut_exclusive(**kwargs):
     label1, val1 = item1
     label2, val2 = item2
     if val1 is not None and val2 is not None:
-        raise TypeError('mutually exclusive arguments: %r and %r' %
-                        (label1, label2))
+        raise TypeError('mutually exclusive arguments: {arg1!r} and {arg2!r}'
+                        .format(arg1=label1, arg2=label2)))
     elif val1 is not None:
         return val1
     else:

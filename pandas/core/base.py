@@ -157,8 +157,8 @@ class NoNewAttributesMixin(object):
         # which error
         if getattr(self, "__frozen", False) and not \
                 (key in type(self).__dict__ or key == "_cache"):
-            raise AttributeError("You cannot add any new attribute '{key}'".
-                                 format(key=key))
+            raise AttributeError("You cannot add any new attribute '{attr}'".
+                                 format(attr=key))
         object.__setattr__(self, key, value)
 
 
@@ -167,13 +167,13 @@ class PandasDelegate(PandasObject):
 
     def _delegate_property_get(self, name, *args, **kwargs):
         raise TypeError("You cannot access the "
-                        "property {name}".format(name=name))
+                        "property {prop}".format(prop=name))
 
     def _delegate_property_set(self, name, value, *args, **kwargs):
-        raise TypeError("The property {name} cannot be set".format(name=name))
+        raise TypeError("The property {prop} cannot be set".format(prop=name))
 
     def _delegate_method(self, name, *args, **kwargs):
-        raise TypeError("You cannot call method {name}".format(name=name))
+        raise TypeError("You cannot call method {method}".format(method=name))
 
     @classmethod
     def _add_delegate_accessors(cls, delegate, accessors, typ,
@@ -334,24 +334,25 @@ class SelectionMixin(object):
 
     def __getitem__(self, key):
         if self._selection is not None:
-            raise Exception('Column(s) %s already selected' % self._selection)
+            raise Exception('Column(s) {sel} already selected'.format(
+                    sel=self._selection))
 
         if isinstance(key, (list, tuple, ABCSeries, ABCIndexClass,
                             np.ndarray)):
             if len(self.obj.columns.intersection(key)) != len(key):
                 bad_keys = list(set(key).difference(self.obj.columns))
-                raise KeyError("Columns not found: %s"
-                               % str(bad_keys)[1:-1])
+                raise KeyError("Columns not found: {keys}".format(
+                        keys=str(bad_keys)[1:-1]))
             return self._gotitem(list(key), ndim=2)
 
         elif not getattr(self, 'as_index', False):
             if key not in self.obj.columns:
-                raise KeyError("Column not found: %s" % key)
+                raise KeyError("Column not found: {col}".format(col=key))
             return self._gotitem(key, ndim=2)
 
         else:
             if key not in self.obj:
-                raise KeyError("Column not found: %s" % key)
+                raise KeyError("Column not found: {col}".format(col=key))
             return self._gotitem(key, ndim=1)
 
     def _gotitem(self, key, ndim, subset=None):
@@ -401,7 +402,7 @@ class SelectionMixin(object):
         if f is not None:
             return f(self, *args, **kwargs)
 
-        raise ValueError("{} is an unknown string function".format(arg))
+        raise ValueError("{func} is an unknown string function".format(func=arg))
 
     def _aggregate(self, arg, *args, **kwargs):
         """
@@ -477,8 +478,8 @@ class SelectionMixin(object):
 
                         if k not in obj.columns:
                             raise SpecificationError('cannot perform renaming '
-                                                     'for {0} with a nested '
-                                                     'dictionary'.format(k))
+                                                     'for {k} with a nested '
+                                                     'dictionary'.format(k=k))
                         nested_renaming_depr(4 + (_level or 0))
 
                     elif isinstance(obj, ABCSeries):

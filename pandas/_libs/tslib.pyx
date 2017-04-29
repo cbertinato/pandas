@@ -3595,8 +3595,8 @@ cpdef convert_to_timedelta64(object ts, object unit):
     if isinstance(ts, timedelta):
         ts = np.timedelta64(ts)
     elif not isinstance(ts, np.timedelta64):
-        raise ValueError("Invalid type for timedelta "
-                         "scalar: {type}".format(type=type(ts)))
+        raise ValueError("Invalid type for timedelta scalar: {type}".format(
+            type=type(ts)))
     return ts.astype('timedelta64[ns]')
 
 
@@ -3645,9 +3645,8 @@ def array_strptime(ndarray[object] values, object fmt,
                 if bad_directive == "\\":
                     bad_directive = "%"
                 del err
-                raise ValueError("'{dir}' is a bad directive in format \
-                                  '{fmt}'".format(dir=bad_directive,
-                                  fmt=fmt))
+                raise ValueError("'{dir}' is a bad directive in format '{fmt}'"
+                    .format(dir=bad_directive, fmt=fmt))
             # IndexError only occurs when the format string is "%"
             except IndexError:
                 raise ValueError("stray %% in format '{fmt}'".format(fmt=fmt))
@@ -3718,8 +3717,8 @@ def array_strptime(ndarray[object] values, object fmt,
                 if is_coerce:
                     iresult[i] = NPY_NAT
                     continue
-                raise ValueError("time data {data!r} does not match format "
-                                 "{fmt!r} (search)".format(data=values[i],
+                raise ValueError("time data {data!r} does not match format \
+                                 {fmt!r} (search)".format(data=values[i],
                                  fmt=fmt))
 
         year = 1900
@@ -4599,8 +4598,8 @@ def tz_localize_to_utc(ndarray[int64_t] vals, object tz, object ambiguous=None,
                 else:
                     stamp = Timestamp(vals[i])
                     raise pytz.AmbiguousTimeError(
-                        "Cannot infer dst time from {stamp!r}, try using the "
-                        "'ambiguous' argument".format(stamp=stamp))
+                        "Cannot infer dst time from {stamp!r}, try using the \
+                        'ambiguous' argument".format(stamp=stamp))
         elif left != NPY_NAT:
             result[i] = left
         elif right != NPY_NAT:

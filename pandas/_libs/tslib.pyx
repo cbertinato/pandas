@@ -1773,8 +1773,8 @@ cdef inline _check_dts_bounds(pandas_datetimestruct *dts):
         error = True
 
     if error:
-        fmt = '{year:d}-{month:.2d}-{day:.2d} {hour:.2d}:{min:.2d}:{sec:.2d}'.
-                                                        format(year=dts.year,
+        fmt = '{year:d}-{month:.2d}-{day:.2d} {hour:.2d}:{min:.2d}:{sec:.2d}'
+                                                        .format(year=dts.year,
                                                         month=dts.month,
                                                         day=dts.day,
                                                         hour=dts.hour,

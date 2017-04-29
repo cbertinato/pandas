@@ -891,8 +891,8 @@ class Categorical(PandasObject):
             new_categories = [new_categories]
         already_included = set(new_categories) & set(self._categories)
         if len(already_included) != 0:
-            msg = ("new categories must not include old categories: %s" %
-                   str(already_included))
+            msg = ("new categories must not include old categories: {cat:s}"
+                    .format(already_included))
             raise ValueError(msg)
         new_categories = list(self._categories) + list(new_categories)
         cat = self if inplace else self.copy()
@@ -946,8 +946,8 @@ class Categorical(PandasObject):
             new_categories = [x for x in new_categories if notna(x)]
 
         if len(not_included) != 0:
-            raise ValueError("removals must all be in old categories: %s" %
-                             str(not_included))
+            raise ValueError("removals must all be in old categories: {cat:s}"
+                    .format(not_included))
 
         return self.set_categories(new_categories, ordered=self.ordered,
                                    rename=False, inplace=inplace)
@@ -1391,7 +1391,8 @@ class Categorical(PandasObject):
         """
         inplace = validate_bool_kwarg(inplace, 'inplace')
         if na_position not in ['last', 'first']:
-            raise ValueError('invalid na_position: {!r}'.format(na_position))
+            raise ValueError('invalid na_position: {pos!r}'.format(
+                    pos=na_position))
 
         codes = np.sort(self._codes)
         if not ascending:

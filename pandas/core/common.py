@@ -215,7 +215,7 @@ def _mut_exclusive(**kwargs):
     label2, val2 = item2
     if val1 is not None and val2 is not None:
         raise TypeError('mutually exclusive arguments: {arg1!r} and {arg2!r}'
-                        .format(arg1=label1, arg2=label2)))
+                        .format(arg1=label1, arg2=label2))
     elif val1 is not None:
         return val1
     else:

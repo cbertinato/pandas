@@ -1285,19 +1285,19 @@ cdef class _Timestamp(datetime):
         def __get__(self):
             # Ideal here would be self.strftime("%Y-%m-%d"), but
             # the datetime strftime() methods require year >= 1900
-            return '{year:d}-{month:.2d}-{day:.2d}'.format(year=self.year,
+            return '{year:d}-{month:02d}-{day:02d}'.format(year=self.year,
                 month=self.month, day=self.day)
 
     property _time_repr:
         def __get__(self):
-            result = '{hour:.2d}:{min:.2d}:{sec:.2d}'.format(hour=self.hour,
+            result = '{hour:02d}:{min:02d}:{sec:02d}'.format(hour=self.hour,
                 min=self.minute, sec=self.second)
 
             if self.nanosecond != 0:
-                result += '.{arg1:.9d}'.format(arg1=self.nanosecond +
+                result += '.{arg1:09d}'.format(arg1=self.nanosecond +
                     1000 * self.microsecond)
             elif self.microsecond != 0:
-                result += '.{arg1:6d}'.format(arg1=self.microsecond)
+                result += '.{arg1:06d}'.format(arg1=self.microsecond)
 
             return result
 
@@ -1773,7 +1773,7 @@ cdef inline _check_dts_bounds(pandas_datetimestruct *dts):
         error = True
 
     if error:
-        fmt = ('{year:d}-{month:.2d}-{day:.2d} {hour:.2d}:{min:.2d}:{sec:.2d}'
+        fmt = ('{year:d}-{month:02d}-{day:02d} {hour:02d}:{min:02d}:{sec:02d}'
                 .format(year=dts.year, month=dts.month, day=dts.day,
                         hour=dts.hour, min=dts.min, sec=dts.sec))
 
@@ -1888,8 +1888,8 @@ def format_array_from_datetime(ndarray[int64_t] values, object tz=None,
         elif basic_format:
 
             pandas_datetime_to_datetimestruct(val, PANDAS_FR_ns, &dts)
-            res = ('{year:d}-{month:.2d}-{day:.2d} '
-                   '{hour:.2d}:{min:.2d}:{sec:.2d}'.format(year=dts.year,
+            res = ('{year:d}-{month:02d}-{day:02d} '
+                   '{hour:02d}:{min:02d}:{sec:02d}'.format(year=dts.year,
                                                           month=dts.month,
                                                           day=dts.day,
                                                           hour=dts.hour,
@@ -1898,11 +1898,11 @@ def format_array_from_datetime(ndarray[int64_t] values, object tz=None,
 
             if show_ns:
                 ns = dts.ps / 1000
-                res += '.{nano:.9d}'.format(nano=ns + 1000 * dts.us)
+                res += '.{nano:09d}'.format(nano=ns + 1000 * dts.us)
             elif show_us:
-                res += '.{micro:.6d}'.format(micro=dts.us)
+                res += '.{micro:06d}'.format(micro=dts.us)
             elif show_ms:
-                res += '.{milli:.3d}'.format(milli=dts.us / 1000)
+                res += '.{milli:03d}'.format(milli=dts.us / 1000)
 
             result[i] = res
 

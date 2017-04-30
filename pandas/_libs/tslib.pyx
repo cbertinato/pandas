@@ -2931,9 +2931,10 @@ class Timedelta(_Timedelta):
             seconds_pretty = "{s:02d}.{ms:03d}{us:03d}{ns:03d}".format(
                 s=self._s, ms=self._ms, us=self._us, ns=self._ns)
 
-            return "{sign1}{day:d} days{sign2}{hour:02d}:{min:02d}:{sec}"
-                .format(sign1=sign_pretty, day=self._d, sign2=sign2_pretty,
-                hour=self._h, min=self._m, sec=seconds_pretty)
+            return (
+                "{sign1}{day:d} days{sign2}{hour:02d}:{min:02d}:{sec}".format(
+                    sign1=sign_pretty, day=self._d, sign2=sign2_pretty,
+                    hour=self._h, min=self._m, sec=seconds_pretty))
 
 
         # by default not showing nano

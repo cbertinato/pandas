@@ -2964,9 +2964,10 @@ class Timedelta(_Timedelta):
                     min=self._m, sec=seconds_pretty)
 
         if subs or format=='long':
-            return "{sign1}{day:d} days{sign2}{hour:02d}:{min:02d}:{sec}"
-                .format(sign1=sign_pretty, day=self._d, sign2=sign2_pretty,
-                hour=self._h, min=self._m, sec=seconds_pretty)
+            return (
+                "{sign1}{day:d} days{sign2}{hour:02d}:{min:02d}:{sec}".format(
+                    sign1=sign_pretty, day=self._d, sign2=sign2_pretty,
+                    hour=self._h, min=self._m, sec=seconds_pretty))
 
         return "{sign}{day:d} days".format(sign=sign_pretty, day=self._d)
 

@@ -559,14 +559,14 @@ class Expr(expr.Expr):
             self.condition = self.terms.prune(ConditionBinOp)
         except AttributeError:
             raise ValueError(
-                "cannot process expression [{expr}], [{val!s}] is not a "
+                "cannot process expression [{expr}], [{value}] is not a "
                 "valid condition".format(expr=self.expr, val=self))
         try:
             self.filter = self.terms.prune(FilterBinOp)
         except AttributeError:
             raise ValueError(
-                "cannot process expression [{expr}], [{val!s}] is not a "
-                "valid filter".format(expr=self.expr, val=self))
+                "cannot process expression [{expr}], [{value}] is not a "
+                "valid filter".format(expr=self.expr, value=self))
 
         return self.condition, self.filter
 

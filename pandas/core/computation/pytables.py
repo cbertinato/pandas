@@ -41,7 +41,8 @@ class Term(ops.Term):
         # must be a queryables
         if self.side == 'left':
             if self.name not in self.env.queryables:
-                raise NameError('name {0!r} is not defined'.format(self.name))
+                raise NameError('name {name!r} is not defined'.format(
+                                                                name=self.name))
             return self.name
 
         # resolve the rhs (and allow it to be None)
@@ -161,7 +162,7 @@ class BinOp(ops.BinOp):
     def generate(self, v):
         """ create and return the op string for this TermValue """
         val = v.tostring(self.encoding)
-        return "(%s %s %s)" % (self.lhs, self.op, val)
+        return "({lhs} {op} {rhs})".format(lhs=self.lhs, op=self.op, rhs=val)
 
     def convert_value(self, v):
         """ convert the expression that is in the term to something that is
@@ -226,8 +227,9 @@ class BinOp(ops.BinOp):
 class FilterBinOp(BinOp):
 
     def __unicode__(self):
-        return pprint_thing("[Filter : [{0}] -> "
-                            "[{1}]".format(self.filter[0], self.filter[1]))
+        return pprint_thing("[Filter : [{filt1}] -> "
+                            "[{filt2}]".format(filt1=self.filter[0],
+                                               filt2=self.filter[1]))
 
     def invert(self):
         """ invert the filter """
@@ -244,7 +246,8 @@ class FilterBinOp(BinOp):
     def evaluate(self):
 
         if not self.is_valid:
-            raise ValueError("query term is not valid [%s]" % self)
+            raise ValueError(
+                    "query term is not valid [{val}]".format(val=self))
 
         rhs = self.conform(self.rhs)
         values = [TermValue(v, v, self.kind) for v in rhs]
@@ -274,8 +277,8 @@ class FilterBinOp(BinOp):
 
         else:
             raise TypeError(
-                "passing a filterable condition to a non-table indexer [%s]" %
-                self)
+                "passing a filterable condition to a non-table indexer [{typ}]"
+                .format(typ=self))
 
         return self
 
@@ -298,7 +301,7 @@ class JointFilterBinOp(FilterBinOp):
 class ConditionBinOp(BinOp):
 
     def __unicode__(self):
-        return pprint_thing("[Condition : [{0}]]".format(self.condition))
+        return pprint_thing("[Condition : [{con}]]".format(con=self.condition))
 
     def invert(self):
         """ invert the condition """
@@ -315,7 +318,7 @@ class ConditionBinOp(BinOp):
     def evaluate(self):
 
         if not self.is_valid:
-            raise ValueError("query term is not valid [%s]" % self)
+            raise ValueError("query term is not valid [{val}]".format(val=self))
 
         # convert values if we are in the table
         if not self.is_in_table:
@@ -330,7 +333,7 @@ class ConditionBinOp(BinOp):
             # too many values to create the expression?
             if len(values) <= self._max_selectors:
                 vs = [self.generate(v) for v in values]
-                self.condition = "(%s)" % ' | '.join(vs)
+                self.condition = "({val})".format(val=' | '.join(vs))
 
             # use a filter after reading
             else:
@@ -344,10 +347,10 @@ class ConditionBinOp(BinOp):
 class JointConditionBinOp(ConditionBinOp):
 
     def evaluate(self):
-        self.condition = "(%s %s %s)" % (
-            self.lhs.condition,
-            self.op,
-            self.rhs.condition)
+        self.condition = "({lhs} {op} {rhs})".format(
+            lhs=self.lhs.condition,
+            op=self.op,
+            rhs=self.rhs.condition)
         return self
 
 
@@ -415,8 +418,8 @@ class ExprVisitor(BaseExprVisitor):
         try:
             return self.const_type(value[slobj], self.env)
         except TypeError:
-            raise ValueError("cannot subscript {0!r} with "
-                             "{1!r}".format(value, slobj))
+            raise ValueError("cannot subscript {val!r} with "
+                             "{obj!r}".format(val=value, obj=slobj))
 
     def visit_Attribute(self, node, **kwargs):
         attr = node.attr
@@ -441,7 +444,8 @@ class ExprVisitor(BaseExprVisitor):
                 if isinstance(value, ast.Name) and value.id == attr:
                     return resolved
 
-        raise ValueError("Invalid Attribute context {0}".format(ctx.__name__))
+        raise ValueError(
+                "Invalid Attribute context {ctx}".format(ctx=ctx.__name__))
 
     def translate_In(self, op):
         return ast.Eq() if isinstance(op, ast.In) else op
@@ -529,7 +533,8 @@ class Expr(expr.Expr):
                 else:
                     w = _validate_where(w)
                     where[idx] = w
-            where = ' & ' .join(["(%s)" % w for w in where])  # noqa
+            # noqa
+            where = ' & ' .join(["({expr})".format(expr=w) for w in where])
 
         self.expr = where
         self.env = Scope(scope_level + 1, local_dict=local_dict)
@@ -552,13 +557,13 @@ class Expr(expr.Expr):
         try:
             self.condition = self.terms.prune(ConditionBinOp)
         except AttributeError:
-            raise ValueError("cannot process expression [{0}], [{1}] is not a "
-                             "valid condition".format(self.expr, self))
+            raise ValueError("cannot process expression [{expr}], [{val}] is not a "
+                             "valid condition".format(expr=self.expr, val=self))
         try:
             self.filter = self.terms.prune(FilterBinOp)
         except AttributeError:
-            raise ValueError("cannot process expression [{0}], [{1}] is not a "
-                             "valid filter".format(self.expr, self))
+            raise ValueError("cannot process expression [{expr}], [{val}] is not a "
+                             "valid filter".format(expr=self.expr, val=self))
 
         return self.condition, self.filter
 
@@ -578,7 +583,7 @@ class TermValue(object):
         if self.kind == u'string':
             if encoding is not None:
                 return self.converted
-            return '"%s"' % self.converted
+            return '"{conv}"'.format(conv=self.converted)
         elif self.kind == u'float':
             # python 2 str(float) is not always
             # round-trippable so use repr()

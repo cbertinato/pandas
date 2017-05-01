@@ -1279,23 +1279,25 @@ cdef class _Timestamp(datetime):
     property _repr_base:
         def __get__(self):
             return '{date} {time}'.format(date=self._date_repr,
-                time=self._time_repr)
+                                          time=self._time_repr)
 
     property _date_repr:
         def __get__(self):
             # Ideal here would be self.strftime("%Y-%m-%d"), but
             # the datetime strftime() methods require year >= 1900
             return '{year:d}-{month:02d}-{day:02d}'.format(year=self.year,
-                month=self.month, day=self.day)
+                                                           month=self.month,
+                                                           day=self.day)
 
     property _time_repr:
         def __get__(self):
             result = '{hour:02d}:{min:02d}:{sec:02d}'.format(hour=self.hour,
-                min=self.minute, sec=self.second)
+                                                             min=self.minute,
+                                                             sec=self.second)
 
             if self.nanosecond != 0:
                 result += '.{arg1:09d}'.format(arg1=self.nanosecond +
-                    1000 * self.microsecond)
+                                               1000 * self.microsecond)
             elif self.microsecond != 0:
                 result += '.{arg1:06d}'.format(arg1=self.microsecond)
 
@@ -1365,7 +1367,7 @@ cdef class _NaT(_Timestamp):
             else:
                 raise TypeError('Cannot compare type {type1!r} with type \
                     {type2!r}'.format(type1=type(self).__name__,
-                    type2=type(other).__name__))
+                                      type2=type(other).__name__))
         return PyObject_RichCompare(other, self, _reverse_ops[op])
 
     def __add__(self, other):
@@ -1814,7 +1816,7 @@ def datetime_to_datetime64(ndarray[object] values):
                 _check_dts_bounds(&dts)
         else:
             raise TypeError('Unrecognized value type: {type}'.format(
-                                                              type=type(val)))
+                            type=type(val)))
 
     return result, inferred_tz
 
@@ -1890,11 +1892,11 @@ def format_array_from_datetime(ndarray[int64_t] values, object tz=None,
             pandas_datetime_to_datetimestruct(val, PANDAS_FR_ns, &dts)
             res = ('{year:d}-{month:02d}-{day:02d} '
                    '{hour:02d}:{min:02d}:{sec:02d}'.format(year=dts.year,
-                                                          month=dts.month,
-                                                          day=dts.day,
-                                                          hour=dts.hour,
-                                                          min=dts.min,
-                                                          sec=dts.sec))
+                                                           month=dts.month,
+                                                           day=dts.day,
+                                                           hour=dts.hour,
+                                                           min=dts.min,
+                                                           sec=dts.sec))
 
             if show_ns:
                 ns = dts.ps / 1000
@@ -2936,7 +2938,6 @@ class Timedelta(_Timedelta):
                     sign1=sign_pretty, day=self._d, sign2=sign2_pretty,
                     hour=self._h, min=self._m, sec=seconds_pretty))
 
-
         # by default not showing nano
         if self._ms or self._us or self._ns:
             seconds_pretty = "{sec:02d}.{msec:03d}{usec:03d}".format(
@@ -2972,7 +2973,8 @@ class Timedelta(_Timedelta):
         return "{sign}{day:d} days".format(sign=sign_pretty, day=self._d)
 
     def __repr__(self):
-        return "Timedelta('{arg1}')".format(arg1=self._repr_base(format='long'))
+        return "Timedelta('{arg1}')".format(
+          arg1=self._repr_base(format='long'))
     def __str__(self):
         return self._repr_base(format='long')
 
@@ -3706,7 +3708,7 @@ def array_strptime(ndarray[object] values, object fmt,
                     iresult[i] = NPY_NAT
                     continue
                 raise ValueError("unconverted data remains: {data}".format(
-                                  data=values[i][found.end():]))
+                                 data=values[i][found.end():]))
 
         # search
         else:
@@ -4569,7 +4571,8 @@ def tz_localize_to_utc(ndarray[int64_t] vals, object tz, object ambiguous=None,
                 if switch_idx.size > 1:
                     raise pytz.AmbiguousTimeError(
                         "There are {switches:d} dst switches when "
-                        "there should only be 1.".format(switches=switch_idx.size))
+                        "there should only be 1.".format(
+                        switches=switch_idx.size))
                 switch_idx = switch_idx[0] + 1 # Pull the only index and adjust
                 a_idx = grp[:switch_idx]
                 b_idx = grp[switch_idx:]
@@ -4911,8 +4914,8 @@ def get_start_end_field(ndarray[int64_t] dtindex, object field,
     if freqstr:
         if freqstr == 'C':
             raise ValueError(
-                "Custom business days is not supported by {field}".format(
-                                                                  field=field))
+                "Custom business days is not supported by {field}"
+                .format(field=field))
         is_business = freqstr[0] == 'B'
 
         # YearBegin(), BYearBegin() use month = starting month of year.

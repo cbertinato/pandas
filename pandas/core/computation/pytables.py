@@ -41,8 +41,8 @@ class Term(ops.Term):
         # must be a queryables
         if self.side == 'left':
             if self.name not in self.env.queryables:
-                raise NameError('name {name!r} is not defined'.format(
-                                                                name=self.name))
+                raise NameError(
+                    'name {name!r} is not defined'.format(name=self.name))
             return self.name
 
         # resolve the rhs (and allow it to be None)
@@ -247,7 +247,7 @@ class FilterBinOp(BinOp):
 
         if not self.is_valid:
             raise ValueError(
-                    "query term is not valid [{val}]".format(val=self))
+                "query term is not valid [{val}]".format(val=self))
 
         rhs = self.conform(self.rhs)
         values = [TermValue(v, v, self.kind) for v in rhs]
@@ -318,7 +318,8 @@ class ConditionBinOp(BinOp):
     def evaluate(self):
 
         if not self.is_valid:
-            raise ValueError("query term is not valid [{val}]".format(val=self))
+            raise ValueError(
+                "query term is not valid [{val}]".format(val=self))
 
         # convert values if we are in the table
         if not self.is_in_table:
@@ -445,7 +446,7 @@ class ExprVisitor(BaseExprVisitor):
                     return resolved
 
         raise ValueError(
-                "Invalid Attribute context {ctx}".format(ctx=ctx.__name__))
+            "Invalid Attribute context {ctx}".format(ctx=ctx.__name__))
 
     def translate_In(self, op):
         return ast.Eq() if isinstance(op, ast.In) else op
@@ -534,7 +535,7 @@ class Expr(expr.Expr):
                     w = _validate_where(w)
                     where[idx] = w
             # noqa
-            where = ' & ' .join(["({expr})".format(expr=w) for w in where])
+            where = ' & '.join(["({expr})".format(expr=w) for w in where])
 
         self.expr = where
         self.env = Scope(scope_level + 1, local_dict=local_dict)
@@ -557,13 +558,15 @@ class Expr(expr.Expr):
         try:
             self.condition = self.terms.prune(ConditionBinOp)
         except AttributeError:
-            raise ValueError("cannot process expression [{expr}], [{val}] is not a "
-                             "valid condition".format(expr=self.expr, val=self))
+            raise ValueError(
+                "cannot process expression [{expr}], [{val!s}] is not a "
+                "valid condition".format(expr=self.expr, val=self))
         try:
             self.filter = self.terms.prune(FilterBinOp)
         except AttributeError:
-            raise ValueError("cannot process expression [{expr}], [{val}] is not a "
-                             "valid filter".format(expr=self.expr, val=self))
+            raise ValueError(
+                "cannot process expression [{expr}], [{val!s}] is not a "
+                "valid filter".format(expr=self.expr, val=self))
 
         return self.condition, self.filter
 

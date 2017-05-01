@@ -134,8 +134,8 @@ cdef class Interval(IntervalMixin):
         left, right = self._repr_base()
         start_symbol = '[' if self.closed_left else '('
         end_symbol = ']' if self.closed_right else ')'
-        return '{arg1}{arg2}, {arg3}{arg4}'.format(arg1=start_symbol,
-            arg2=left, arg3=right, arg4=end_symbol)
+        return ('{arg1}{arg2}, {arg3}{arg4}'.format(arg1=start_symbol,
+                arg2=left, arg3=right, arg4=end_symbol))
 
     def __add__(self, y):
         if isinstance(y, numbers.Number):
@@ -205,7 +205,7 @@ cpdef intervals_to_interval_bounds(ndarray intervals):
 
         if not isinstance(interval, Interval):
             raise TypeError("type {arg1} with value {arg2} is not an interval".
-                format(arg1=type(interval), arg2=interval))
+                            format(arg1=type(interval), arg2=interval))
 
         left[i] = interval.left
         right[i] = interval.right

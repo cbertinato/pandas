@@ -98,9 +98,9 @@ def versions_from_parentdir(parentdir_prefix, root, verbose):
     dirname = os.path.basename(root)
     if not dirname.startswith(parentdir_prefix):
         if verbose:
-            print("guessing rootdir is '{root}', but '{dir}' doesn't start with "
-                  "prefix '{prefix}'".format(root=root, dir=dirname,
-                  prefix=parentdir_prefix))
+            print("guessing rootdir is '{root}', but '{dir}' doesn't start "
+                  "with prefix '{prefix}'".format(root=root, dir=dirname,
+                                                  prefix=parentdir_prefix))
         raise NotThisMethod("rootdir doesn't start with parentdir_prefix")
     return {"version": dirname[len(parentdir_prefix):],
             "full-revisionid": None,
@@ -156,7 +156,7 @@ def git_versions_from_keywords(keywords, tag_prefix, verbose):
         tags = set([r for r in refs if re.search(r'\d', r)])
         if verbose:
             print("discarding '{tags}', no digits".format(
-                    tags=",".join(refs - tags)))
+                tags=",".join(refs - tags)))
     if verbose:
         print("likely tags: {tags}".format(tags=",".join(sorted(tags))))
     for ref in sorted(tags):
@@ -228,8 +228,9 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
         mo = re.search(r'^(.+)-(\d+)-g([0-9a-f]+)$', git_describe)
         if not mo:
             # unparseable. Maybe git-describe is misbehaving?
-            pieces["error"] = ("unable to parse git-describe output: '{output}'"
-                                .format(output=describe_out))
+            pieces["error"] = (
+                "unable to parse git-describe output: '{output}'".format(
+                    output=describe_out))
             return pieces
 
         # tag
@@ -240,7 +241,7 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
                 print(fmt.format(tag=full_tag, prefix=tag_prefix))
             pieces["error"] = ("tag '{tag}' doesn't start with "
                                "prefix '{prefix}'".format(tag=full_tag,
-                               prefix=tag_prefix))
+                                                          prefix=tag_prefix))
             return pieces
         pieces["closest-tag"] = full_tag[len(tag_prefix):]
 
@@ -284,8 +285,9 @@ def render_pep440(pieces):
                 rendered += ".dirty"
     else:
         # exception #1
-        rendered = "0+untagged.{dist:d}.g{short}".format(dist=pieces["distance"],
-                                                         short=pieces["short"])
+        rendered = (
+            "0+untagged.{dist:d}.g{short}".format(dist=pieces["distance"],
+                                                  short=pieces["short"]))
         if pieces["dirty"]:
             rendered += ".dirty"
     return rendered

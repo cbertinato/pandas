@@ -891,7 +891,7 @@ class Categorical(PandasObject):
             new_categories = [new_categories]
         already_included = set(new_categories) & set(self._categories)
         if len(already_included) != 0:
-            msg = ("new categories must not include old categories: {cat:s}"
+            msg = ("new categories must not include old categories: {cat!s}"
                     .format(cat=already_included))
             raise ValueError(msg)
         new_categories = list(self._categories) + list(new_categories)
@@ -946,7 +946,7 @@ class Categorical(PandasObject):
             new_categories = [x for x in new_categories if notna(x)]
 
         if len(not_included) != 0:
-            raise ValueError("removals must all be in old categories: {cat:s}"
+            raise ValueError("removals must all be in old categories: {cat!s}"
                     .format(not_included))
 
         return self.set_categories(new_categories, ordered=self.ordered,

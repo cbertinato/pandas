@@ -947,7 +947,7 @@ class Categorical(PandasObject):
 
         if len(not_included) != 0:
             raise ValueError("removals must all be in old categories: {cat!s}"
-                    .format(not_included))
+                    .format(cat=not_included))
 
         return self.set_categories(new_categories, ordered=self.ordered,
                                    rename=False, inplace=inplace)

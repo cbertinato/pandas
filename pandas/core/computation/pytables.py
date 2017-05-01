@@ -560,7 +560,7 @@ class Expr(expr.Expr):
         except AttributeError:
             raise ValueError(
                 "cannot process expression [{expr}], [{value}] is not a "
-                "valid condition".format(expr=self.expr, val=self))
+                "valid condition".format(expr=self.expr, value=self))
         try:
             self.filter = self.terms.prune(FilterBinOp)
         except AttributeError:

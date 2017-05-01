@@ -308,7 +308,7 @@ def period_format(int64_t value, int freq, object fmt=None):
             left = period_asfreq(value, freq, 6000, 0)
             right = period_asfreq(value, freq, 6000, 1)
             return '{left}/{right}'.format(left=period_format(left, 6000),
-                              right=period_format(right, 6000))
+                                           right=period_format(right, 6000))
         elif (freq_group == 5000 # BUS
               or freq_group == 6000): # DAY
             fmt = b'%Y-%m-%d'
@@ -951,7 +951,7 @@ cdef class _Period(object):
         base, mult = frequencies.get_freq_code(self.freq)
         formatted = period_format(self.ordinal, base)
         return "Period('{fmt}', '{freq}')".format(fmt=formatted,
-            freq=self.freqstr)
+                                                  freq=self.freqstr)
 
     def __unicode__(self):
         """

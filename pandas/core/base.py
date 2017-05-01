@@ -335,14 +335,14 @@ class SelectionMixin(object):
     def __getitem__(self, key):
         if self._selection is not None:
             raise Exception('Column(s) {sel} already selected'.format(
-                    sel=self._selection))
+                            sel=self._selection))
 
         if isinstance(key, (list, tuple, ABCSeries, ABCIndexClass,
                             np.ndarray)):
             if len(self.obj.columns.intersection(key)) != len(key):
                 bad_keys = list(set(key).difference(self.obj.columns))
                 raise KeyError("Columns not found: {keys}".format(
-                        keys=str(bad_keys)[1:-1]))
+                               keys=str(bad_keys)[1:-1]))
             return self._gotitem(list(key), ndim=2)
 
         elif not getattr(self, 'as_index', False):
@@ -402,7 +402,8 @@ class SelectionMixin(object):
         if f is not None:
             return f(self, *args, **kwargs)
 
-        raise ValueError("{func} is an unknown string function".format(func=arg))
+        raise ValueError(
+            "{func} is an unknown string function".format(func=arg))
 
     def _aggregate(self, arg, *args, **kwargs):
         """

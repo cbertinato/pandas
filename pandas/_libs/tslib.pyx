@@ -3700,7 +3700,7 @@ def array_strptime(ndarray[object] values, object fmt,
                     continue
                 raise ValueError("time data {data!r} does not match "
                                  "format {fmt!r} (match)".format(
-                                 date=values[i], fmt=fmt))
+                                 data=values[i], fmt=fmt))
             if len(val) != found.end():
                 if is_coerce:
                     iresult[i] = NPY_NAT

@@ -892,7 +892,7 @@ class Categorical(PandasObject):
         already_included = set(new_categories) & set(self._categories)
         if len(already_included) != 0:
             msg = ("new categories must not include old categories: {cat:s}"
-                    .format(already_included))
+                    .format(cat=already_included))
             raise ValueError(msg)
         new_categories = list(self._categories) + list(new_categories)
         cat = self if inplace else self.copy()

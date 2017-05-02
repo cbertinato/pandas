@@ -535,7 +535,7 @@ class Expr(expr.Expr):
                     w = _validate_where(w)
                     where[idx] = w
 
-            where = ' & ' .join(["({w:s})".format(w=k) for k in where]) # noqa
+            where = ' & ' .join(["(%s)" % k for k in where]) # noqa
 
         self.expr = where
         self.env = Scope(scope_level + 1, local_dict=local_dict)

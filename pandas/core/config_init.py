@@ -455,8 +455,9 @@ with cf.config_prefix('io.excel'):
     def _register_xlsx(engine, other):
         cf.register_option('xlsx.writer', engine,
                            writer_engine_doc.format(ext='xlsx', default=engine,
-                                                    others=", '%s'" % other),
-                           validator=str)
+                                                    others=", '{other}'"
+                                                    .format(other=other),
+                                                    validator=str))
 
     try:
         # better memory footprint

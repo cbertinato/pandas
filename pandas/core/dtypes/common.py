@@ -1854,10 +1854,11 @@ def _validate_date_like_dtype(dtype):
     try:
         typ = np.datetime_data(dtype)[0]
     except ValueError as e:
-        raise TypeError('%s' % e)
+        raise TypeError('{error}'.format(e))
     if typ != 'generic' and typ != 'ns':
-        raise ValueError('%r is too specific of a frequency, try passing %r' %
-                         (dtype.name, dtype.type.__name__))
+        raise ValueError('{freq!r} is too specific of a frequency, '
+                         'try passing {alt!r}'
+                         .format(freq=dtype.name, alt=dtype.type.__name__))
 
 
 _string_dtypes = frozenset(map(_get_dtype_from_object, (binary_type,

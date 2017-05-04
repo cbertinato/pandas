@@ -382,7 +382,8 @@ class DataFrame(NDFrame):
                 arr = np.array(data, dtype=dtype, copy=copy)
             except (ValueError, TypeError) as e:
                 exc = TypeError('DataFrame constructor called with '
-                                'incompatible data and dtype: %s' % e)
+                                'incompatible data and dtype: {error}'
+                                .format(error=e))
                 raise_with_traceback(exc)
 
             if arr.ndim == 0 and index is not None and columns is not None:
@@ -507,8 +508,9 @@ class DataFrame(NDFrame):
                 try:
                     values = values.astype(dtype)
                 except Exception as orig:
-                    e = ValueError("failed to cast to '%s' (Exception was: %s)"
-                                   % (dtype, orig))
+                    e = ValueError(
+                        "failed to cast to '{type}' (Exception was: {ex})"
+                        .format(type=dtype, ex=orig))
                     raise_with_traceback(e)
 
         index, columns = _get_axes(*values.shape)
@@ -836,8 +838,9 @@ class DataFrame(NDFrame):
             lvals = self.values
             rvals = np.asarray(other)
             if lvals.shape[1] != rvals.shape[0]:
-                raise ValueError('Dot product shape mismatch, %s vs %s' %
-                                 (lvals.shape, rvals.shape))
+                raise ValueError(
+                    'Dot product shape mismatch, {shape1} vs {shape2}'
+                    .format(shape1=lvals.shape, shape2=rvals.shape))
 
         if isinstance(other, DataFrame):
             return self._constructor(np.dot(lvals, rvals), index=left.index,
@@ -851,7 +854,8 @@ class DataFrame(NDFrame):
             else:
                 return Series(result, index=left.index)
         else:  # pragma: no cover
-            raise TypeError('unsupported type: %s' % type(other))
+            raise TypeError(
+                'unsupported type: {type}'.format(type=type(other)))
 
     # ----------------------------------------------------------------------
     # IO methods (to / from other formats)
@@ -993,7 +997,8 @@ class DataFrame(NDFrame):
         elif orient.lower().startswith('i'):
             return into_c((k, v.to_dict(into)) for k, v in self.iterrows())
         else:
-            raise ValueError("orient '%s' not understood" % orient)
+            raise ValueError("orient '{orient}' not understood"
+                             .format(orient=orient))
 
     def to_gbq(self, destination_table, project_id, chunksize=10000,
                verbose=True, reauth=False, if_exists='fail', private_key=None):
@@ -1210,7 +1215,7 @@ class DataFrame(NDFrame):
             if isinstance(self.index, MultiIndex):
                 for i, n in enumerate(index_names):
                     if n is None:
-                        index_names[i] = 'level_%d' % count
+                        index_names[i] = 'level_{count}'.format(count=count)
                         count += 1
             elif index_names[0] is None:
                 index_names = ['index']
@@ -1747,7 +1752,7 @@ class DataFrame(NDFrame):
         lines.append(self.index.summary())
 
         if len(self.columns) == 0:
-            lines.append('Empty %s' % type(self).__name__)
+            lines.append('Empty {name}'.format(name=type(self).__name__))
             _put_lines(buf, lines)
             return
 
@@ -1768,8 +1773,8 @@ class DataFrame(NDFrame):
         exceeds_info_cols = len(self.columns) > max_cols
 
         def _verbose_repr():
-            lines.append('Data columns (total %d columns):' %
-                         len(self.columns))
+            lines.append('Data columns (total {num} columns):'
+                         .format(len(self.columns)))
             space = max([len(pprint_thing(k)) for k in self.columns]) + 4
             counts = None
 
@@ -1777,9 +1782,10 @@ class DataFrame(NDFrame):
             if show_counts:
                 counts = self.count()
                 if len(cols) != len(counts):  # pragma: no cover
-                    raise AssertionError('Columns must equal counts (%d != %d)'
-                                         % (len(cols), len(counts)))
-                tmpl = "%s non-null %s"
+                    raise AssertionError(
+                        'Columns must equal counts ({cols} != {counts})'
+                        .format(cols=len(cols), counts=len(counts)))
+                tmpl = "{count} non-null {type}"
 
             dtypes = self.dtypes
             for i, col in enumerate(self.columns):
@@ -1790,7 +1796,8 @@ class DataFrame(NDFrame):
                 if show_counts:
                     count = counts.iloc[i]
 
-                lines.append(_put_str(col, space) + tmpl % (count, dtype))
+                lines.append(_put_str(col, space) +
+                             tmpl.format(count=count, type=dtype))
 
         def _non_verbose_repr():
             lines.append(self.columns.summary(name='Columns'))
@@ -1799,9 +1806,13 @@ class DataFrame(NDFrame):
             # returns size in human readable format
             for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
                 if num < 1024.0:
-                    return "%3.1f%s %s" % (num, size_qualifier, x)
+                    return "{num:3.1f}{qual} {lbl}".format(num=num,
+                                                           qual=size_qualifier,
+                                                           lbl=x)
                 num /= 1024.0
-            return "%3.1f%s %s" % (num, size_qualifier, 'PB')
+            return "{num:3.1f}{qual} {lbl}".format(num=num,
+                                                   qual=size_qualifier,
+                                                   lbl='PB')
 
         if verbose:
             _verbose_repr()
@@ -1814,8 +1825,9 @@ class DataFrame(NDFrame):
                 _verbose_repr()
 
         counts = self.get_dtype_counts()
-        dtypes = ['%s(%d)' % k for k in sorted(compat.iteritems(counts))]
-        lines.append('dtypes: %s' % ', '.join(dtypes))
+        dtypes = ['{s}({d})'.format(k)
+                  for k in sorted(compat.iteritems(counts))]
+        lines.append('dtypes: {types}'.format(types=', '.join(dtypes)))
 
         if memory_usage is None:
             memory_usage = get_option('display.memory_usage')
@@ -1833,8 +1845,8 @@ class DataFrame(NDFrame):
                         self.index._is_memory_usage_qualified()):
                     size_qualifier = '+'
             mem_usage = self.memory_usage(index=True, deep=deep).sum()
-            lines.append("memory usage: %s\n" %
-                         _sizeof_fmt(mem_usage, size_qualifier))
+            lines.append("memory usage: {usage}\n"
+                         .format(usage=_sizeof_fmt(mem_usage, size_qualifier)))
         _put_lines(buf, lines)
 
     def memory_usage(self, index=True, deep=False):
@@ -2110,8 +2122,9 @@ class DataFrame(NDFrame):
                 warnings.warn("Boolean Series key will be reindexed to match "
                               "DataFrame index.", UserWarning, stacklevel=3)
             elif len(key) != len(self.index):
-                raise ValueError('Item wrong length %d instead of %d.' %
-                                 (len(key), len(self.index)))
+                raise ValueError(
+                    'Item wrong length {got:d} instead of {expect:d}.'
+                    .format(got=len(key), expect=len(self.index)))
             # check_bool_indexer will throw exception if Series key cannot
             # be reindexed to match DataFrame rows
             key = check_bool_indexer(self.index, key)
@@ -2228,8 +2241,8 @@ class DataFrame(NDFrame):
         """
         inplace = validate_bool_kwarg(inplace, 'inplace')
         if not isinstance(expr, compat.string_types):
-            msg = "expr must be a string to be evaluated, {0} given"
-            raise ValueError(msg.format(type(expr)))
+            msg = "expr must be a string to be evaluated, {given} given"
+            raise ValueError(msg.format(given=type(expr)))
         kwargs['level'] = kwargs.pop('level', 0) + 1
         kwargs['target'] = None
         res = self.eval(expr, **kwargs)
@@ -2396,8 +2409,8 @@ class DataFrame(NDFrame):
 
         # can't both include AND exclude!
         if not include.isdisjoint(exclude):
-            raise ValueError('include and exclude overlap on %s' %
-                             (include & exclude))
+            raise ValueError('include and exclude overlap on {overlap}'
+                             .format(include & exclude))
 
         # empty include/exclude -> defaults to True
         # three cases (we've already raised if both are empty)
@@ -2462,8 +2475,9 @@ class DataFrame(NDFrame):
         # also raises Exception if object array with NA values
         if com.is_bool_indexer(key):
             if len(key) != len(self.index):
-                raise ValueError('Item wrong length %d instead of %d!' %
-                                 (len(key), len(self.index)))
+                raise ValueError(
+                    'Item wrong length {got:d} instead of {given:d}!'
+                    .format(got=len(key), given=len(self.index)))
             key = check_bool_indexer(self.index, key)
             indexer = key.nonzero()[0]
             self._check_setitem_copy()
@@ -2997,7 +3011,8 @@ class DataFrame(NDFrame):
 
         if verify_integrity and not index.is_unique:
             duplicates = index.get_duplicates()
-            raise ValueError('Index has duplicate keys: %s' % duplicates)
+            raise ValueError(
+                'Index has duplicate keys: {dup}'.format(dup=duplicates))
 
         for c in to_remove:
             del frame[c]
@@ -3189,7 +3204,8 @@ class DataFrame(NDFrame):
 
         if not drop:
             if isinstance(self.index, MultiIndex):
-                names = [n if n is not None else ('level_%d' % i)
+                names = [n if n is not None else
+                         ('level_{lvl:d}'.format(lvl=i))
                          for (i, n) in enumerate(self.index.names)]
                 to_insert = lzip(self.index.levels, self.index.labels)
             else:
@@ -3210,7 +3226,7 @@ class DataFrame(NDFrame):
                         if len(col_name) not in (1, self.columns.nlevels):
                             raise ValueError("col_fill=None is incompatible "
                                              "with incomplete column name "
-                                             "{}".format(name))
+                                             "{name}".format(name=name))
                         col_fill = col_name[0]
 
                     lev_num = self.columns._get_level_number(col_level)
@@ -3343,7 +3359,8 @@ class DataFrame(NDFrame):
                 mask = count > 0
             else:
                 if how is not None:
-                    raise ValueError('invalid how option: %s' % how)
+                    raise ValueError(
+                        'invalid how option: {opt}'.format(opt=how))
                 else:
                     raise TypeError('must specify how or thresh')
 
@@ -3440,8 +3457,9 @@ class DataFrame(NDFrame):
         if not isinstance(by, list):
             by = [by]
         if is_sequence(ascending) and len(by) != len(ascending):
-            raise ValueError('Length of ascending (%d) != length of by (%d)' %
-                             (len(ascending), len(by)))
+            raise ValueError(
+                'Length of ascending ({asc:d}) != length of by ({by:d})'
+                .format(asc=len(ascending), by=len(by)))
         if len(by) > 1:
             from pandas.core.sorting import lexsort_indexer
 
@@ -3454,8 +3472,8 @@ class DataFrame(NDFrame):
             for x in by:
                 k = self.xs(x, axis=other_axis).values
                 if k.ndim == 2:
-                    raise ValueError('Cannot sort by duplicate column %s' %
-                                     str(x))
+                    raise ValueError(
+                        'Cannot sort by duplicate column {col!s}'.format(x))
                 keys.append(trans(k))
             indexer = lexsort_indexer(keys, orders=ascending,
                                       na_position=na_position)
@@ -3469,12 +3487,12 @@ class DataFrame(NDFrame):
 
                 # try to be helpful
                 if isinstance(self.columns, MultiIndex):
-                    raise ValueError('Cannot sort by column %s in a '
+                    raise ValueError('Cannot sort by column {col!s} in a '
                                      'multi-index you need to explicitly '
-                                     'provide all the levels' % str(by))
+                                     'provide all the levels'.format(col=by))
 
-                raise ValueError('Cannot sort by duplicate column %s' %
-                                 str(by))
+                raise ValueError(
+                    'Cannot sort by duplicate column {col!s}'.format(col=by))
             if isinstance(ascending, (tuple, list)):
                 ascending = ascending[0]
 
@@ -3810,8 +3828,8 @@ class DataFrame(NDFrame):
         left, right = self.align(other, join='outer', axis=0, level=level,
                                  copy=False)
         if fill_value is not None:
-            raise NotImplementedError("fill_value %r not supported." %
-                                      fill_value)
+            raise NotImplementedError(
+                "fill_value {val!r} not supported.".format(val=fill_value))
         return self._constructor(func(left.values.T, right.values).T,
                                  index=left.index, columns=self.columns,
                                  copy=False)
@@ -3821,8 +3839,8 @@ class DataFrame(NDFrame):
         left, right = self.align(other, join='outer', axis=1, level=level,
                                  copy=False)
         if fill_value is not None:
-            raise NotImplementedError("fill_value %r not supported" %
-                                      fill_value)
+            raise NotImplementedError(
+                "fill_value {val!r} not supported".format(val=fill_value))
 
         new_data = left._data.eval(func=func, other=right,
                                    axes=[left.columns, self.index],
@@ -4629,7 +4647,8 @@ class DataFrame(NDFrame):
                           for i, (arr, name) in enumerate(zip(values,
                                                               res_index)))
         else:  # pragma : no cover
-            raise AssertionError('Axis must be 0 or 1, got %s' % str(axis))
+            raise AssertionError(
+                'Axis must be 0 or 1, got {axis!s}'.format(axis=axis))
 
         i = None
         keys = []
@@ -4656,8 +4675,8 @@ class DataFrame(NDFrame):
                     # make sure i is defined
                     if i is not None:
                         k = res_index[i]
-                        e.args = e.args + ('occurred at index %s' %
-                                           pprint_thing(k), )
+                        e.args = e.args + ('occurred at index {index}'
+                                           .format(pprint_thing(k), ))
                 raise
 
         if len(results) > 0 and is_sequence(results[0]):
@@ -4686,7 +4705,8 @@ class DataFrame(NDFrame):
         elif axis == 1:
             target = self.T
         else:  # pragma: no cover
-            raise AssertionError('Axis must be 0 or 1, got %s' % axis)
+            raise AssertionError(
+                'Axis must be 0 or 1, got {axis}'.format(axis=axis))
 
         result_values = np.empty_like(target.values)
         columns = target.columns
@@ -5338,8 +5358,9 @@ class DataFrame(NDFrame):
         agg_axis = frame._get_agg_axis(axis)
 
         if not isinstance(count_axis, MultiIndex):
-            raise TypeError("Can only count levels on hierarchical %s." %
-                            self._get_axis_name(axis))
+            raise TypeError(
+                "Can only count levels on hierarchical {name}."
+                .format(name=self._get_axis_name(axis)))
 
         if frame._is_mixed_type:
             # Since we have mixed types, calling notna(frame.values) might
@@ -5414,8 +5435,8 @@ class DataFrame(NDFrame):
                     data = self._get_bool_data()
                 else:  # pragma: no cover
                     e = NotImplementedError("Handling exception with filter_"
-                                            "type %s not implemented." %
-                                            filter_type)
+                                            "type {type} not implemented."
+                                            .format(type=filter_type))
                     raise_with_traceback(e)
                 with np.errstate(all='ignore'):
                     result = f(data.values)
@@ -5427,8 +5448,8 @@ class DataFrame(NDFrame):
                 elif filter_type == 'bool':
                     data = self._get_bool_data()
                 else:  # pragma: no cover
-                    msg = ("Generating numeric_only data with filter_type %s"
-                           "not supported." % filter_type)
+                    msg = ("Generating numeric_only data with filter_type"
+                           "{type} not supported.".format(type=filter_type))
                     raise NotImplementedError(msg)
                 values = data.values
                 labels = data._get_agg_axis(axis)
@@ -5550,7 +5571,8 @@ class DataFrame(NDFrame):
         elif axis_num == 1:
             return self.index
         else:
-            raise ValueError('Axis must be 0 or 1 (got %r)' % axis_num)
+            raise ValueError(
+                'Axis must be 0 or 1 (got {num})'.format(num=axis_num))
 
     def mode(self, axis=0, numeric_only=False):
         """
@@ -5693,7 +5715,8 @@ class DataFrame(NDFrame):
         elif axis == 1:
             new_data.set_axis(0, self.columns.to_timestamp(freq=freq, how=how))
         else:  # pragma: no cover
-            raise AssertionError('Axis must be 0 or 1. Got %s' % str(axis))
+            raise AssertionError(
+                'Axis must be 0 or 1. Got {axis!s}'.format(axis=axis))
 
         return self._constructor(new_data)
 
@@ -5724,7 +5747,8 @@ class DataFrame(NDFrame):
         elif axis == 1:
             new_data.set_axis(0, self.columns.to_period(freq=freq))
         else:  # pragma: no cover
-            raise AssertionError('Axis must be 0 or 1. Got %s' % str(axis))
+            raise AssertionError(
+                'Axis must be 0 or 1. Got {axis!s}'.format(axis=axis))
 
         return self._constructor(new_data)
 
@@ -5797,7 +5821,7 @@ class DataFrame(NDFrame):
                 raise TypeError("only list-like or dict-like objects are "
                                 "allowed to be passed to DataFrame.isin(), "
                                 "you passed a "
-                                "{0!r}".format(type(values).__name__))
+                                "{name!r}".format(name=type(values).__name__))
             return DataFrame(
                 algorithms.isin(self.values.ravel(),
                                 values).reshape(self.shape), self.index,
@@ -5884,8 +5908,9 @@ def extract_index(data):
 
             if have_series:
                 if lengths[0] != len(index):
-                    msg = ('array length %d does not match index length %d' %
-                           (lengths[0], len(index)))
+                    msg = ('array length {arr:d} does not match index'
+                           'length {ind:d}'.format(arr=lengths[0],
+                                                   ind=len(index)))
                     raise ValueError(msg)
             else:
                 index = _default_index(lengths[0])
@@ -6086,8 +6111,9 @@ def _convert_object_array(content, columns, coerce_float=False, dtype=None):
     else:
         if len(columns) != len(content):  # pragma: no cover
             # caller's responsibility to check for this...
-            raise AssertionError('%d columns passed, passed data had %s '
-                                 'columns' % (len(columns), len(content)))
+            raise AssertionError('{col:d} columns passed, passed data had'
+                                 '{cont:d} columns'.format(col=len(columns),
+                                                           cont=len(content)))
 
     # provide soft conversion of object dtypes
     def convert(arr):
@@ -6113,7 +6139,7 @@ def _get_names_from_index(data):
         if n is not None:
             index[i] = n
         else:
-            index[i] = 'Unnamed %d' % count
+            index[i] = 'Unnamed {count}'.format(count=count)
             count += 1
 
     return index

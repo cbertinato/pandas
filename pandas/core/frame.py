@@ -1825,7 +1825,7 @@ class DataFrame(NDFrame):
                 _verbose_repr()
 
         counts = self.get_dtype_counts()
-        dtypes = ['{s}({d})'.format(k)
+        dtypes = ['{}({})'.format(k)
                   for k in sorted(compat.iteritems(counts))]
         lines.append('dtypes: {types}'.format(types=', '.join(dtypes)))
 
@@ -3473,7 +3473,8 @@ class DataFrame(NDFrame):
                 k = self.xs(x, axis=other_axis).values
                 if k.ndim == 2:
                     raise ValueError(
-                        'Cannot sort by duplicate column {col!s}'.format(x))
+                        'Cannot sort by duplicate column {col!s}'
+                        .format(col=x))
                 keys.append(trans(k))
             indexer = lexsort_indexer(keys, orders=ascending,
                                       na_position=na_position)
@@ -4676,7 +4677,7 @@ class DataFrame(NDFrame):
                     if i is not None:
                         k = res_index[i]
                         e.args = e.args + ('occurred at index {index}'
-                                           .format(pprint_thing(k), ))
+                                           .format(index=pprint_thing(k), ))
                 raise
 
         if len(results) > 0 and is_sequence(results[0]):

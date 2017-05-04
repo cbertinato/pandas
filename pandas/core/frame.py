@@ -1825,7 +1825,7 @@ class DataFrame(NDFrame):
                 _verbose_repr()
 
         counts = self.get_dtype_counts()
-        dtypes = ['{}({})'.format(k)
+        dtypes = ['{:s}({:d})'.format(*k)
                   for k in sorted(compat.iteritems(counts))]
         lines.append('dtypes: {types}'.format(types=', '.join(dtypes)))
 
@@ -4677,7 +4677,7 @@ class DataFrame(NDFrame):
                     if i is not None:
                         k = res_index[i]
                         e.args = e.args + ('occurred at index {index}'
-                                           .format(index=pprint_thing(k), ))
+                                           .format(index=pprint_thing(k)), )
                 raise
 
         if len(results) > 0 and is_sequence(results[0]):
@@ -5909,8 +5909,8 @@ def extract_index(data):
 
             if have_series:
                 if lengths[0] != len(index):
-                    msg = ('array length {arr:d} does not match index'
-                           'length {ind:d}'.format(arr=lengths[0],
+                    msg = ('array length {arr:d} does not match index \
+                           length {ind:d}'.format(arr=lengths[0],
                                                    ind=len(index)))
                     raise ValueError(msg)
             else:

@@ -1774,11 +1774,11 @@ class DataFrame(NDFrame):
 
         def _verbose_repr():
             lines.append('Data columns (total {num} columns):'
-                         .format(len(self.columns)))
+                         .format(num=len(self.columns)))
             space = max([len(pprint_thing(k)) for k in self.columns]) + 4
             counts = None
 
-            tmpl = "%s%s"
+            tmpl = "{count}{type}"
             if show_counts:
                 counts = self.count()
                 if len(cols) != len(counts):  # pragma: no cover

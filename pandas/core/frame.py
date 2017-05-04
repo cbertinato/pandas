@@ -5911,7 +5911,7 @@ def extract_index(data):
                 if lengths[0] != len(index):
                     msg = ('array length {arr} does not match index '
                            'length {ind}'.format(arr=lengths[0],
-                           ind=len(index)))
+                                                 ind=len(index)))
                     raise ValueError(msg)
             else:
                 index = _default_index(lengths[0])

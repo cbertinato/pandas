@@ -72,8 +72,9 @@ _shared_doc_kwargs = dict(
 
 def _single_replace(self, to_replace, method, inplace, limit):
     if self.ndim != 1:
-        raise TypeError('cannot replace {0} with method {1} on a {2}'
-                        .format(to_replace, method, type(self).__name__))
+        raise TypeError(
+            'cannot replace {repl} with method {meth} on a {typ}'
+            .format(repl=to_replace, meth=method, typ=type(self).__name__))
 
     orig_dtype = self.dtype
     result = self if inplace else self.copy()
@@ -152,8 +153,8 @@ class NDFrame(PandasObject, SelectionMixin):
             # a compound dtype
             if dtype.kind == 'V':
                 raise NotImplementedError("compound dtypes are not implemented"
-                                          " in the {0} constructor"
-                                          .format(self.__class__.__name__))
+                                          "in the {cls} constructor"
+                                          .format(cls=self.__class__.__name__))
 
         return dtype
 
@@ -187,8 +188,8 @@ class NDFrame(PandasObject, SelectionMixin):
     def __unicode__(self):
         # unicode representation based upon iterating over self
         # (since, by definition, `PandasContainers` are iterable)
-        prepr = '[%s]' % ','.join(map(pprint_thing, self))
-        return '%s(%s)' % (self.__class__.__name__, prepr)
+        prepr = '[{slf}]'.format(slf=','.join(map(pprint_thing, self)))
+        return '{cls}({prep})'.format(cls=self.__class__.__name__, prep=prepr)
 
     def _dir_additions(self):
         """ add the string-like attributes from the info_axis """
@@ -310,7 +311,8 @@ class NDFrame(PandasObject, SelectionMixin):
                 if a in kwargs:
                     if alias in kwargs:
                         raise TypeError("arguments are mutually exclusive "
-                                        "for [%s,%s]" % (a, alias))
+                                        "for [{ax},{al}]"
+                                        .format(ax=a, al=alias))
                     continue
                 if alias in kwargs:
                     kwargs[a] = kwargs.pop(alias)
@@ -350,8 +352,8 @@ class NDFrame(PandasObject, SelectionMixin):
                 return self._AXIS_NUMBERS[axis]
             except:
                 pass
-        raise ValueError('No axis named {0} for object type {1}'
-                         .format(axis, type(self)))
+        raise ValueError('No axis named {ax} for object type {typ}'
+                         .format(ax=axis, typ=type(self)))
 
     def _get_axis_name(self, axis):
         axis = self._AXIS_ALIASES.get(axis, axis)
@@ -363,8 +365,8 @@ class NDFrame(PandasObject, SelectionMixin):
                 return self._AXIS_NAMES[axis]
             except:
                 pass
-        raise ValueError('No axis named {0} for object type {1}'
-                         .format(axis, type(self)))
+        raise ValueError('No axis named {ax} for object type {typ}'
+                         .format(ax=axis, typ=type(self)))
 
     def _get_axis(self, axis):
         name = self._get_axis_name(axis)
@@ -589,7 +591,8 @@ class NDFrame(PandasObject, SelectionMixin):
 
         # we must have unique axes
         if len(axes) != len(set(axes)):
-            raise ValueError('Must specify %s unique axes' % self._AXIS_LEN)
+            raise ValueError('Must specify {num} unique axes'
+                             .format(num=self._AXIS_LEN))
 
         new_axes = self._construct_axes_dict_from(self, [self._get_axis(x)
                                                          for x in axes_names])
@@ -811,7 +814,8 @@ class NDFrame(PandasObject, SelectionMixin):
 
         if kwargs:
             raise TypeError('rename() got an unexpected keyword '
-                            'argument "{0}"'.format(list(kwargs.keys())[0]))
+                            'argument "{keys}"'
+                            .format(keys=list(kwargs.keys())[0]))
 
         if com._count_not_none(*axes.values()) == 0:
             raise TypeError('must pass an index to rename')
@@ -1001,8 +1005,8 @@ class NDFrame(PandasObject, SelectionMixin):
     # Iteration
 
     def __hash__(self):
-        raise TypeError('{0!r} objects are mutable, thus they cannot be'
-                        ' hashed'.format(self.__class__.__name__))
+        raise TypeError('{cls!r} objects are mutable, thus they cannot be'
+                        ' hashed'.format(cls=self.__class__.__name__))
 
     def __iter__(self):
         """Iterate over infor axis"""
@@ -1076,9 +1080,9 @@ class NDFrame(PandasObject, SelectionMixin):
         return any(len(self._get_axis(a)) == 0 for a in self._AXIS_ORDERS)
 
     def __nonzero__(self):
-        raise ValueError("The truth value of a {0} is ambiguous. "
+        raise ValueError("The truth value of a {cls} is ambiguous. "
                          "Use a.empty, a.bool(), a.item(), a.any() or a.all()."
-                         .format(self.__class__.__name__))
+                         .format(cls=self.__class__.__name__))
 
     __bool__ = __nonzero__
 
@@ -1094,7 +1098,7 @@ class NDFrame(PandasObject, SelectionMixin):
             return bool(v)
         elif is_scalar(v):
             raise ValueError("bool cannot act on a non-boolean single element "
-                             "{0}".format(self.__class__.__name__))
+                             "{cls}".format(cls=self.__class__.__name__))
 
         self.__nonzero__()
 
@@ -2737,7 +2741,8 @@ class NDFrame(PandasObject, SelectionMixin):
 
         if kwargs:
             raise TypeError('reindex() got an unexpected keyword '
-                            'argument "{0}"'.format(list(kwargs.keys())[0]))
+                            'argument "{kw}"'
+                            .format(kw=list(kwargs.keys())[0]))
 
         self._consolidate_inplace()
 
@@ -3202,8 +3207,8 @@ class NDFrame(PandasObject, SelectionMixin):
         if isinstance(func, tuple):
             func, target = func
             if target in kwargs:
-                raise ValueError('%s is both the pipe target and a keyword '
-                                 'argument' % target)
+                raise ValueError('{targ} is both the pipe target and '
+                                 'a keyword argument'.format(targ=target))
             kwargs[target] = self
             return func(*args, **kwargs)
         else:
@@ -3917,7 +3922,8 @@ class NDFrame(PandasObject, SelectionMixin):
 
         if isinstance(value, (list, tuple)):
             raise TypeError('"value" parameter must be a scalar or dict, but '
-                            'you passed a "{0}"'.format(type(value).__name__))
+                            'you passed a "{typ}"'
+                            .format(typ=type(value).__name__))
         self._consolidate_inplace()
 
         # set the default here, so functions examining the signaure
@@ -4003,7 +4009,8 @@ class NDFrame(PandasObject, SelectionMixin):
             elif isinstance(value, DataFrame) and self.ndim == 2:
                 new_data = self.where(self.notna(), value)
             else:
-                raise ValueError("invalid fill value with a %s" % type(value))
+                raise ValueError("invalid fill value with a {val}"
+                                 .format(val=type(value)))
 
         if inplace:
             self._update_inplace(new_data)
@@ -4224,9 +4231,11 @@ class NDFrame(PandasObject, SelectionMixin):
             elif is_list_like(to_replace):  # [NA, ''] -> [0, 'missing']
                 if is_list_like(value):
                     if len(to_replace) != len(value):
-                        raise ValueError('Replacement lists must match '
-                                         'in length. Expecting %d got %d ' %
-                                         (len(to_replace), len(value)))
+                        raise ValueError(
+                            'Replacement lists must match '
+                            'in length. Expecting {exp:d} '
+                            'got {got:d} '
+                            .format(exp=len(to_replace), got=len(value)))
 
                     new_data = self._data.replace_list(src_list=to_replace,
                                                        dest_list=value,
@@ -4243,8 +4252,8 @@ class NDFrame(PandasObject, SelectionMixin):
                     raise TypeError("'regex' must be a string or a compiled "
                                     "regular expression or a list or dict of "
                                     "strings or regular expressions, you "
-                                    "passed a"
-                                    " {0!r}".format(type(regex).__name__))
+                                    "passed a {regex!r}"
+                                    .format(regex=type(regex).__name__))
                 return self.replace(regex, value, inplace=inplace, limit=limit,
                                     regex=True)
             else:
@@ -4266,7 +4275,7 @@ class NDFrame(PandasObject, SelectionMixin):
                                                   regex=regex)
                 else:
                     msg = ('Invalid "to_replace" type: '
-                           '{0!r}').format(type(to_replace).__name__)
+                           '{typ!r}').format(typ=type(to_replace).__name__)
                     raise TypeError(msg)  # pragma: no cover
 
         if inplace:
@@ -5375,7 +5384,7 @@ class NDFrame(PandasObject, SelectionMixin):
                                       method=method, limit=limit,
                                       fill_axis=fill_axis)
         else:  # pragma: no cover
-            raise TypeError('unsupported type: %s' % type(other))
+            raise TypeError('unsupported type: {typ}'.format(typ=type(other)))
 
     def _align_frame(self, other, join='outer', axis=None, level=None,
                      copy=True, fill_value=np.nan, method=None, limit=None,
@@ -5868,8 +5877,9 @@ class NDFrame(PandasObject, SelectionMixin):
                 new_data = self._data.copy()
                 new_data.axes[block_axis] = index.shift(periods)
             else:
-                msg = ('Given freq %s does not match PeriodIndex freq %s' %
-                       (freq.rule_code, orig_freq.rule_code))
+                msg = ('Given freq {given} does not match PeriodIndex '
+                       'freq {freq}'.format(given=freq.rule_code,
+                                            freq=orig_freq.rule_code))
                 raise ValueError(msg)
         else:
             new_data = self._data.copy()
@@ -5911,8 +5921,8 @@ class NDFrame(PandasObject, SelectionMixin):
 
         if before is not None and after is not None:
             if before > after:
-                raise ValueError('Truncate: %s must be after %s' %
-                                 (after, before))
+                raise ValueError('Truncate: {after} must be after {before}'
+                                 .format(after=after, before=before))
 
         slicer = [slice(None, None)] * self._AXIS_LEN
         slicer[axis] = slice(before, after)
@@ -5956,8 +5966,8 @@ class NDFrame(PandasObject, SelectionMixin):
             if not hasattr(ax, 'tz_convert'):
                 if len(ax) > 0:
                     ax_name = self._get_axis_name(axis)
-                    raise TypeError('%s is not a valid DatetimeIndex or '
-                                    'PeriodIndex' % ax_name)
+                    raise TypeError('{idx} is not a valid DatetimeIndex or '
+                                    'PeriodIndex'.format(idx=ax_name))
                 else:
                     ax = DatetimeIndex([], tz=tz)
             else:
@@ -5972,7 +5982,8 @@ class NDFrame(PandasObject, SelectionMixin):
             ax = ax.set_levels(new_level, level=level)
         else:
             if level not in (None, 0, ax.name):
-                raise ValueError("The level {0} is not valid".format(level))
+                raise ValueError("The level {lvl} is not valid"
+                                 .format(lvl=level))
             ax = _tz_convert(ax, tz)
 
         result = self._constructor(self._data, copy=copy)
@@ -6024,8 +6035,8 @@ class NDFrame(PandasObject, SelectionMixin):
             if not hasattr(ax, 'tz_localize'):
                 if len(ax) > 0:
                     ax_name = self._get_axis_name(axis)
-                    raise TypeError('%s is not a valid DatetimeIndex or '
-                                    'PeriodIndex' % ax_name)
+                    raise TypeError('{idx} is not a valid DatetimeIndex or '
+                                    'PeriodIndex'.format(idx=ax_name))
                 else:
                     ax = DatetimeIndex([], tz=tz)
             else:
@@ -6040,7 +6051,8 @@ class NDFrame(PandasObject, SelectionMixin):
             ax = ax.set_levels(new_level, level=level)
         else:
             if level not in (None, 0, ax.name):
-                raise ValueError("The level {0} is not valid".format(level))
+                raise ValueError("The level {lvl} is not valid"
+                                 .format(lvl=level))
             ax = _tz_localize(ax, tz, ambiguous)
 
         result = self._constructor(self._data, copy=copy)
@@ -6369,14 +6381,14 @@ class NDFrame(PandasObject, SelectionMixin):
         """Validate percentiles (used by describe and quantile)."""
 
         msg = ("percentiles should all be in the interval [0, 1]. "
-               "Try {0} instead.")
+               "Try {percent} instead.")
         q = np.asarray(q)
         if q.ndim == 0:
             if not 0 <= q <= 1:
-                raise ValueError(msg.format(q / 100.0))
+                raise ValueError(msg.format(percent=q / 100.0))
         else:
             if not all(0 <= qs <= 1 for qs in q):
-                raise ValueError(msg.format(q / 100.0))
+                raise ValueError(msg.format(percent=q / 100.0))
         return q
 
     _shared_docs['pct_change'] = """
@@ -6627,8 +6639,9 @@ class NDFrame(PandasObject, SelectionMixin):
 
 def _doc_parms(cls):
     """Return a tuple of the doc parms."""
-    axis_descr = "{%s}" % ', '.join(["{0} ({1})".format(a, i)
-                                     for i, a in enumerate(cls._AXIS_ORDERS)])
+    descr = (', '.join(["{ax} ({idx})".format(ax=a, idx=i)
+             for i, a in enumerate(cls._AXIS_ORDERS)]))
+    axis_descr = "{{desc}}".format(desc=descr)
     name = (cls._constructor_sliced.__name__
             if cls._AXIS_LEN > 1 else 'scalar')
     name2 = cls.__name__
@@ -6766,7 +6779,7 @@ def _make_cum_function(cls, name, name1, name2, axis_descr, desc,
                        accum_func, accum_func_name, mask_a, mask_b):
     @Substitution(outname=name, desc=desc, name1=name1, name2=name2,
                   axis_descr=axis_descr, accum_func_name=accum_func_name)
-    @Appender("Return {0} over requested axis.".format(desc) +
+    @Appender("Return {desc} over requested axis.".format(desc=desc) +
               _cnum_doc)
     def cum_func(self, axis=None, skipna=True, *args, **kwargs):
         skipna = nv.validate_cum_func_with_skipna(skipna, args, kwargs, name)

@@ -291,7 +291,8 @@ class Grouper(object):
         if self.key is not None:
             key = self.key
             if key not in obj._info_axis:
-                raise KeyError("The grouper name {0} is not found".format(key))
+                raise KeyError(
+                    "The grouper name {name} is not found".format(name=key))
             ax = Index(obj[key], name=key)
 
         else:
@@ -309,7 +310,7 @@ class Grouper(object):
                 else:
                     if level not in (0, ax.name):
                         raise ValueError(
-                            "The level {0} is not valid".format(level))
+                            "The level {lvl} is not valid".format(lvl=level))
 
         # possibly sort
         if (self.sort or sort) and not ax.is_monotonic:
@@ -548,8 +549,8 @@ class _GroupBy(PandasObject, SelectionMixin):
         if hasattr(self.obj, attr):
             return self._make_wrapper(attr)
 
-        raise AttributeError("%r object has no attribute %r" %
-                             (type(self).__name__, attr))
+        raise AttributeError("{name!r} object has no attribute {attr!r}"
+                             .format(name=type(self).__name__, attr=attr))
 
     plot = property(GroupByPlot)
 
@@ -557,9 +558,9 @@ class _GroupBy(PandasObject, SelectionMixin):
         if name not in self._apply_whitelist:
             is_callable = callable(getattr(self._selected_obj, name, None))
             kind = ' callable ' if is_callable else ' '
-            msg = ("Cannot access{0}attribute {1!r} of {2!r} objects, try "
-                   "using the 'apply' method".format(kind, name,
-                                                     type(self).__name__))
+            msg = ("Cannot access{kind}attribute {name!r} of {type!r} "
+                   "objects, try using the 'apply' method"
+                   .format(kind=kind, name=name, type=type(self).__name__))
             raise AttributeError(msg)
 
         # need to setup the selection
@@ -1395,7 +1396,7 @@ class GroupBy(_GroupBy):
             # Note: when agg-ing picker doesn't raise this, just returns NaN
             raise ValueError("For a DataFrame groupby, dropna must be "
                              "either None, 'any' or 'all', "
-                             "(was passed %s)." % (dropna),)
+                             "(was passed {val}).".format(val=dropna),)
 
         # old behaviour, but with all and any support for DataFrames.
         # modified in GH 7559 to have better perf
@@ -1694,7 +1695,7 @@ def groupby(obj, by, **kwds):
     elif isinstance(obj, DataFrame):
         klass = DataFrameGroupBy
     else:  # pragma: no cover
-        raise TypeError('invalid type: %s' % type(obj))
+        raise TypeError('invalid type: {typ}'.format(typ=type(obj)))
 
     return klass(obj, by, **kwds)
 
@@ -1978,7 +1979,8 @@ class BaseGrouper(object):
 
             # otherwise find dtype-specific version, falling back to object
             for dt in [dtype_str, 'object']:
-                f = getattr(libgroupby, "%s_%s" % (fname, dtype_str), None)
+                f = getattr(libgroupby, "{name}_{type}".format(name=fname,
+                            type=dtype_str), None)
                 if f is not None:
                     return f
 
@@ -2002,8 +2004,8 @@ class BaseGrouper(object):
 
         if func is None:
             raise NotImplementedError("function is not implemented for this"
-                                      "dtype: [how->%s,dtype->%s]" %
-                                      (how, dtype_str))
+                                      "dtype: [how->{how},dtype->{type}]"
+                                      .format(how=how, type=dtype_str))
         return func, dtype_str
 
     def _cython_operation(self, kind, values, how, axis):
@@ -2023,13 +2025,13 @@ class BaseGrouper(object):
         elif is_datetime64_any_dtype(values):
             if how in ['add', 'prod', 'cumsum', 'cumprod']:
                 raise NotImplementedError(
-                    "datetime64 type does not support {} "
-                    "operations".format(how))
+                    "datetime64 type does not support {how} "
+                    "operations".format(how=how))
         elif is_timedelta64_dtype(values):
             if how in ['prod', 'cumprod']:
                 raise NotImplementedError(
-                    "timedelta64 type does not support {} "
-                    "operations".format(how))
+                    "timedelta64 type does not support {how} "
+                    "operations".format(how=how))
 
         arity = self._cython_arity.get(how, 1)
 
@@ -2079,7 +2081,8 @@ class BaseGrouper(object):
                 raise
 
         if is_numeric:
-            out_dtype = '%s%d' % (values.dtype.kind, values.dtype.itemsize)
+            out_dtype = '{kind}{size:d}'.format(kind=values.dtype.kind,
+                                                size=values.dtype.itemsize)
         else:
             out_dtype = 'object'
 
@@ -2439,7 +2442,8 @@ class Grouping(object):
         if level is not None:
             if not isinstance(level, int):
                 if level not in index.names:
-                    raise AssertionError('Level %s not in index' % str(level))
+                    raise AssertionError('Level {lvl!s} not in index'
+                                         .format(lvl=level))
                 level = index.names.index(level)
 
             if self.name is None:
@@ -2489,13 +2493,14 @@ class Grouping(object):
                                 (Series, Index, Categorical, np.ndarray)):
                 if getattr(self.grouper, 'ndim', 1) != 1:
                     t = self.name or str(type(self.grouper))
-                    raise ValueError("Grouper for '%s' not 1-dimensional" % t)
+                    raise ValueError("Grouper for '{t}' not 1-dimensional"
+                                     .format(t=t))
                 self.grouper = self.index.map(self.grouper)
                 if not (hasattr(self.grouper, "__len__") and
                         len(self.grouper) == len(self.index)):
                     errmsg = ('Grouper result violates len(labels) == '
-                              'len(data)\nresult: %s' %
-                              pprint_thing(self.grouper))
+                              'len(data)\nresult: {res}'
+                              .format(res=pprint_thing(self.grouper)))
                     self.grouper = None  # Try for sanity
                     raise AssertionError(errmsg)
 
@@ -2510,7 +2515,7 @@ class Grouping(object):
                 self.grouper = to_timedelta(self.grouper)
 
     def __repr__(self):
-        return 'Grouping({0})'.format(self.name)
+        return 'Grouping({name})'.format(name=self.name)
 
     def __iter__(self):
         return iter(self.indices)
@@ -2593,8 +2598,8 @@ def _get_grouper(obj, key=None, axis=0, level=None, sort=True,
 
             if isinstance(level, compat.string_types):
                 if obj.index.name != level:
-                    raise ValueError('level name %s is not the name of the '
-                                     'index' % level)
+                    raise ValueError('level name {lvl} is not the name of the '
+                                     'index'.format(lvl=level))
             elif level > 0 or level < -1:
                 raise ValueError('level > 0 or level < -1 only valid with '
                                  ' MultiIndex')
@@ -2677,10 +2682,10 @@ def _get_grouper(obj, key=None, axis=0, level=None, sort=True,
             if gpr in obj:
                 if gpr in obj.index.names:
                     warnings.warn(
-                        ("'%s' is both a column name and an index level.\n"
+                        ("'{gpr}' is both a column name and an index level.\n"
                          "Defaulting to column but "
                          "this will raise an ambiguity error in a "
-                         "future version") % gpr,
+                         "future version").format(gpr=gpr),
                         FutureWarning, stacklevel=5)
                 in_axis, name, gpr = True, gpr, obj[gpr]
                 exclusions.append(name)
@@ -2791,7 +2796,7 @@ def %(name)s(self) :
             # pass args by name to f because otherwise
             # GroupBy._make_wrapper won't know whether
             # we passed in an axis parameter.
-            args_by_name = ['{0}={0}'.format(arg) for arg in args[1:]]
+            args_by_name = ['{arg}={arg}'.format(arg=arg) for arg in args[1:]]
             params = {'name': name,
                       'doc': doc,
                       'sig': ','.join(decl),
@@ -2935,7 +2940,8 @@ class SeriesGroupBy(GroupBy):
             obj = self
             if name in results:
                 raise SpecificationError('Function names must be unique, '
-                                         'found multiple named %s' % name)
+                                         'found multiple named {name}'
+                                         .format(name=name))
 
             # reset the cache so that we
             # only include the named selection
@@ -3139,7 +3145,7 @@ class SeriesGroupBy(GroupBy):
             sorter = np.lexsort((val, ids))
         except TypeError:  # catches object dtypes
             assert val.dtype == object, \
-                'val.dtype must be object, got %s' % val.dtype
+                'val.dtype must be object, got {typ}'.format(typ=val.dtype)
             val, _ = algorithms.factorize(val, sort=False)
             sorter = np.lexsort((val, ids))
             _isna = lambda a: a == -1
@@ -3955,9 +3961,9 @@ class NDFrameGroupBy(GroupBy):
                     indices.append(self._get_index(name))
             else:
                 # non scalars aren't allowed
-                raise TypeError("filter function returned a %s, "
-                                "but expected a scalar bool" %
-                                type(res).__name__)
+                raise TypeError("filter function returned a {res}, "
+                                "but expected a scalar bool"
+                                .format(res=type(res).__name__))
 
         return self._apply_filter(indices, dropna)
 

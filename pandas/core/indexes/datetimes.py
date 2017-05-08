@@ -141,7 +141,8 @@ def _dt_index_cmp(opname, nat_result=False):
 def _ensure_datetime64(other):
     if isinstance(other, np.datetime64):
         return other
-    raise TypeError('%s type object %s' % (type(other), str(other)))
+    raise TypeError('{typ} type object {obj!s}'
+                    .format(typ=type(other), obj=other))
 
 
 _midnight = time(0, 0)
@@ -292,8 +293,8 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
             if is_float(periods):
                 periods = int(periods)
             elif not is_integer(periods):
-                raise ValueError('Periods must be a number, got %s' %
-                                 str(periods))
+                raise ValueError('Periods must be a number, got {periods!s}'
+                                 .format(periods=periods))
 
         if data is None and freq is None:
             raise ValueError("Must provide freq argument if no data is "
@@ -320,8 +321,8 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
         if not isinstance(data, (np.ndarray, Index, ABCSeries)):
             if is_scalar(data):
                 raise ValueError('DatetimeIndex() must be called with a '
-                                 'collection of some kind, %s was passed'
-                                 % repr(data))
+                                 'collection of some kind, {data!r} was passed'
+                                 .format(data=data))
             # other iterable of some kind
             if not isinstance(data, (list, tuple)):
                 data = list(data)
@@ -345,9 +346,9 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
                 else:
                     # the tz's must match
                     if str(tz) != str(data.tz):
-                        msg = ('data is already tz-aware {0}, unable to '
-                               'set specified tz: {1}')
-                        raise TypeError(msg.format(data.tz, tz))
+                        msg = ('data is already tz-aware {datatz}, unable to '
+                               'set specified tz: {tz}')
+                        raise TypeError(msg.format(datatz=data.tz, tz=tz))
 
                 subarr = data.values
 
@@ -396,10 +397,11 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
                     on_freq = cls._generate(subarr[0], None, len(subarr), None,
                                             freq, tz=tz, ambiguous=ambiguous)
                     if not np.array_equal(subarr.asi8, on_freq.asi8):
-                        raise ValueError('Inferred frequency {0} from passed '
-                                         'dates does not conform to passed '
-                                         'frequency {1}'
-                                         .format(inferred, freq.freqstr))
+                        raise ValueError('Inferred frequency {inf} from '
+                                         'passed dates does not conform to '
+                                         'passed frequency {pass}'
+                                         .format(inf=inferred,
+                                                 pass=freq.freqstr))
 
         if freq_infer:
             inferred = subarr.inferred_freq
@@ -862,7 +864,8 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
             return Index(self.format(), name=self.name, dtype=object)
         elif is_period_dtype(dtype):
             return self.to_period(freq=dtype.freq)
-        raise ValueError('Cannot cast DatetimeIndex to dtype %s' % dtype)
+        raise ValueError('Cannot cast DatetimeIndex to dtype {typ}'
+                         .format(typ=dtype))
 
     def _get_time_micros(self):
         utc = _utc()

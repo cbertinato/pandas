@@ -892,11 +892,11 @@ class Index(IndexOpsMixin, StringAccessorMixin, PandasObject):
             summary = '[], '
         elif n == 1:
             first = formatter(self[0])
-            summary = '[{first}], '.format(first=first)
+            summary = u'[{first}], '.format(first=first)
         elif n == 2:
             first = formatter(self[0])
             last = formatter(self[-1])
-            summary = '[{first}, {last}], '.format(first=first, last=last)
+            summary = u'[{first}, {last}], '.format(first=first, last=last)
         else:
 
             if n > max_seq_items:
@@ -1175,7 +1175,7 @@ class Index(IndexOpsMixin, StringAccessorMixin, PandasObject):
             if (hasattr(tail, 'format') and
                     not isinstance(tail, compat.string_types)):
                 tail = tail.format()
-            index_summary = (', {head} to {tail}'
+            index_summary = (u', {head} to {tail}'
                              .format(head=pprint_thing(head),
                                      tail=pprint_thing(tail)))
         else:

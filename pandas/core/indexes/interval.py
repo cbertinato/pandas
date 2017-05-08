@@ -172,9 +172,9 @@ class IntervalIndex(IntervalMixin, Index):
             left = left.astype(right.dtype)
 
         if type(left) != type(right):
-            raise ValueError("must not have differing left [{}] "
-                             "and right [{}] types".format(
-                                 type(left), type(right)))
+            raise ValueError("must not have differing left [{left}] "
+                             "and right [{right}] types".format(
+                                 left=type(left), right=type(right)))
 
         if isinstance(left, ABCPeriodIndex):
             raise ValueError("Period dtypes are not supported, "
@@ -219,7 +219,8 @@ class IntervalIndex(IntervalMixin, Index):
         Verify that the IntervalIndex is valid.
         """
         if self.closed not in _VALID_CLOSED:
-            raise ValueError("invalid options for 'closed': %s" % self.closed)
+            raise ValueError("invalid options for 'closed': {opt}"
+                             .format(opt=self.closed))
         if len(self.left) != len(self.right):
             raise ValueError('left and right must have the same length')
         left_mask = notna(self.left)
@@ -507,7 +508,8 @@ class IntervalIndex(IntervalMixin, Index):
         elif is_categorical_dtype(dtype):
             from pandas import Categorical
             return Categorical(self, ordered=True)
-        raise ValueError('Cannot cast IntervalIndex to dtype %s' % dtype)
+        raise ValueError('Cannot cast IntervalIndex to dtype {typ}'
+                         .format(typ=dtype))
 
     @cache_readonly
     def dtype(self):
@@ -609,8 +611,8 @@ class IntervalIndex(IntervalMixin, Index):
 
         if method in ['bfill', 'backfill', 'pad', 'ffill', 'nearest']:
             raise NotImplementedError(
-                'method {} not yet implemented for '
-                'IntervalIndex'.format(method))
+                'method {method} not yet implemented for '
+                'IntervalIndex'.format(method=method))
 
         raise ValueError("Invalid fill method")
 
@@ -724,7 +726,7 @@ class IntervalIndex(IntervalMixin, Index):
                 # we didn't find exact intervals
                 # or are non-unique
                 raise ValueError("unable to slice with "
-                                 "this key: {}".format(key))
+                                 "this key: {key}".format(key=key))
 
         else:
             loc = self.get_loc(key)
@@ -948,23 +950,23 @@ class IntervalIndex(IntervalMixin, Index):
             summary = '[]'
         elif n == 1:
             first = formatter(self[0])
-            summary = '[{}]'.format(first)
+            summary = '[{first}]'.format(first=first)
         elif n == 2:
             first = formatter(self[0])
             last = formatter(self[-1])
-            summary = '[{}, {}]'.format(first, last)
+            summary = '[{first}, {last}]'.format(first=first, last=last)
         else:
 
             if n > max_seq_items:
                 n = min(max_seq_items // 2, 10)
                 head = [formatter(x) for x in self[:n]]
                 tail = [formatter(x) for x in self[-n:]]
-                summary = '[{} ... {}]'.format(', '.join(head),
-                                               ', '.join(tail))
+                summary = '[{head} ... {tail}]'.format(head=', '.join(head),
+                                               tail=', '.join(tail))
             else:
                 head = []
                 tail = [formatter(x) for x in self]
-                summary = '[{}]'.format(', '.join(tail))
+                summary = '[{tail}]'.format(tail=', '.join(tail))
 
         return summary + self._format_space()
 
@@ -972,11 +974,11 @@ class IntervalIndex(IntervalMixin, Index):
         attrs = [('closed', repr(self.closed))]
         if self.name is not None:
             attrs.append(('name', default_pprint(self.name)))
-        attrs.append(('dtype', "'%s'" % self.dtype))
+        attrs.append(('dtype', "'{typ}'".format(typ=self.dtype)))
         return attrs
 
     def _format_space(self):
-        return "\n%s" % (' ' * (len(self.__class__.__name__) + 1))
+        return "\n{spc}".format(spc=' ' * (len(self.__class__.__name__) + 1))
 
     def argsort(self, *args, **kwargs):
         return np.lexsort((self.right, self.left))

@@ -397,11 +397,11 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
                     on_freq = cls._generate(subarr[0], None, len(subarr), None,
                                             freq, tz=tz, ambiguous=ambiguous)
                     if not np.array_equal(subarr.asi8, on_freq.asi8):
-                        raise ValueError('Inferred frequency {inf} from '
+                        raise ValueError('Inferred frequency {infer} from '
                                          'passed dates does not conform to '
-                                         'passed frequency {pass}'
-                                         .format(inf=inferred,
-                                                 pass=freq.freqstr))
+                                         'passed frequency {passed}'
+                                         .format(infer=inferred,
+                                                 passed=freq.freqstr))
 
         if freq_infer:
             inferred = subarr.inferred_freq

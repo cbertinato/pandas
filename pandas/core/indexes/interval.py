@@ -962,7 +962,7 @@ class IntervalIndex(IntervalMixin, Index):
                 head = [formatter(x) for x in self[:n]]
                 tail = [formatter(x) for x in self[-n:]]
                 summary = '[{head} ... {tail}]'.format(head=', '.join(head),
-                                               tail=', '.join(tail))
+                                                       tail=', '.join(tail))
             else:
                 head = []
                 tail = [formatter(x) for x in self]

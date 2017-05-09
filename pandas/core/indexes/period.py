@@ -62,7 +62,7 @@ def _field_accessor(name, alias, docstring=None):
 
 def dt64arr_to_periodarr(data, freq, tz):
     if data.dtype != np.dtype('M8[ns]'):
-        raise ValueError('Wrong dtype: %s' % data.dtype)
+        raise ValueError('Wrong dtype: {typ}'.format(typ=data.dtype))
 
     freq = Period._maybe_convert_freq(freq)
     base, mult = _gfc(freq)
@@ -199,8 +199,8 @@ class PeriodIndex(DatelikeOps, DatetimeIndexOpsMixin, Int64Index):
             if is_float(periods):
                 periods = int(periods)
             elif not is_integer(periods):
-                raise ValueError('Periods must be a number, got %s' %
-                                 str(periods))
+                raise ValueError('Periods must be a number, got {periods!s}'
+                                 .format(periods=periods))
 
         if name is None and hasattr(data, 'name'):
             name = data.name
@@ -402,10 +402,10 @@ class PeriodIndex(DatelikeOps, DatetimeIndexOpsMixin, Int64Index):
                     return Index(result, name=name)
             elif isinstance(func, np.ufunc):
                 if 'M->M' not in func.types:
-                    msg = "ufunc '{0}' not supported for the PeriodIndex"
+                    msg = "ufunc '{func}' not supported for the PeriodIndex"
                     # This should be TypeError, but TypeError cannot be raised
                     # from here because numpy catches.
-                    raise ValueError(msg.format(func.__name__))
+                    raise ValueError(msg.format(func=func.__name__))
 
         if is_bool_dtype(result):
             return result
@@ -425,7 +425,7 @@ class PeriodIndex(DatelikeOps, DatetimeIndexOpsMixin, Int64Index):
 
     @property
     def _formatter_func(self):
-        return lambda x: "'%s'" % x
+        return lambda x: "'{s}'".format(s=x)
 
     def asof_locs(self, where, mask):
         """
@@ -463,7 +463,8 @@ class PeriodIndex(DatelikeOps, DatetimeIndexOpsMixin, Int64Index):
             return self.to_timestamp(how=how).tz_localize(dtype.tz)
         elif is_period_dtype(dtype):
             return self.asfreq(freq=dtype.freq)
-        raise ValueError('Cannot cast PeriodIndex to dtype %s' % dtype)
+        raise ValueError('Cannot cast PeriodIndex to dtype {typ}'
+                         .format(typ=dtype))
 
     @Substitution(klass='PeriodIndex')
     @Appender(_shared_docs['searchsorted'])
@@ -663,8 +664,8 @@ class PeriodIndex(DatelikeOps, DatetimeIndexOpsMixin, Int64Index):
             # but ufunc may pass integer to _add_delta
             return other
         # raise when input doesn't have freq
-        msg = "Input has different freq from PeriodIndex(freq={0})"
-        raise IncompatibleFrequency(msg.format(self.freqstr))
+        msg = "Input has different freq from PeriodIndex(freq={freq})"
+        raise IncompatibleFrequency(msg.format(freq=self.freqstr))
 
     def _add_delta(self, other):
         ordinal_delta = self._maybe_convert_timedelta(other)

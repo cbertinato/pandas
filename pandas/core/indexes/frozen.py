@@ -114,7 +114,7 @@ class FrozenNDArray(PandasObject, np.ndarray):
         """
         prepr = pprint_thing(self, escape_chars=('\t', '\r', '\n'),
                              quote_strings=True)
-        return "{name}({prep}, dtype='{typ}')".format(name=type(self).__name__,
+        return u"{name}({prep}, dtype='{typ}')".format(name=type(self).__name__,
                                                       prep=prepr,
                                                       typ=self.dtype)
 

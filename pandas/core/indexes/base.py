@@ -1183,7 +1183,7 @@ class Index(IndexOpsMixin, StringAccessorMixin, PandasObject):
 
         if name is None:
             name = type(self).__name__
-        return '{name}: {len} entries{idx}'.format(name=name, len=len(self),
+        return u'{name}: {len} entries{idx}'.format(name=name, len=len(self),
                                                    idx=index_summary)
 
     def _mpl_repr(self):

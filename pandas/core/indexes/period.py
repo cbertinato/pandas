@@ -959,7 +959,7 @@ class PeriodIndex(DatelikeOps, DatetimeIndexOpsMixin, Int64Index):
         if date_format:
             formatter = lambda dt: dt.strftime(date_format)
         else:
-            formatter = lambda dt: u('%s') % dt
+            formatter = lambda dt: u('{dt}').format(dt=dt)
 
         if self.hasnans:
             mask = self._isnan

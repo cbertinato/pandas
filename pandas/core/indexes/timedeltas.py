@@ -42,20 +42,20 @@ def _td_index_cmp(opname, nat_result=False):
     """
 
     def wrapper(self, other):
-        msg = "cannot compare a TimedeltaIndex with type {0}"
+        msg = "cannot compare a TimedeltaIndex with type {typ}"
         func = getattr(super(TimedeltaIndex, self), opname)
         if _is_convertible_to_td(other) or other is NaT:
             try:
                 other = _to_m8(other)
             except ValueError:
                 # failed to parse as timedelta
-                raise TypeError(msg.format(type(other)))
+                raise TypeError(msg.format(typ=type(other)))
             result = func(other)
             if isna(other):
                 result.fill(nat_result)
         else:
             if not is_list_like(other):
-                raise TypeError(msg.format(type(other)))
+                raise TypeError(msg.format(typ=type(other)))
 
             other = TimedeltaIndex(other).values
             result = func(other)
@@ -180,8 +180,8 @@ class TimedeltaIndex(DatetimeIndexOpsMixin, TimelikeOps, Int64Index):
             if is_float(periods):
                 periods = int(periods)
             elif not is_integer(periods):
-                raise ValueError('Periods must be a number, got %s' %
-                                 str(periods))
+                raise ValueError('Periods must be a number, got {per!s}'
+                                 .format(per=periods))
 
         if data is None and freq is None:
             raise ValueError("Must provide freq argument if no data is "
@@ -197,8 +197,8 @@ class TimedeltaIndex(DatetimeIndexOpsMixin, TimelikeOps, Int64Index):
         if not isinstance(data, (np.ndarray, Index, ABCSeries)):
             if is_scalar(data):
                 raise ValueError('TimedeltaIndex() must be called with a '
-                                 'collection of some kind, %s was passed'
-                                 % repr(data))
+                                 'collection of some kind, {data!r} was passed'
+                                 .format(data=data))
 
         # convert if not already
         if getattr(data, 'dtype', None) != _TD_DTYPE:
@@ -215,10 +215,11 @@ class TimedeltaIndex(DatetimeIndexOpsMixin, TimelikeOps, Int64Index):
                     on_freq = cls._generate(
                         index[0], None, len(index), name, freq)
                     if not np.array_equal(index.asi8, on_freq.asi8):
-                        raise ValueError('Inferred frequency {0} from passed '
-                                         'timedeltas does not conform to '
-                                         'passed frequency {1}'
-                                         .format(inferred, freq.freqstr))
+                        raise ValueError('Inferred frequency {infer} from '
+                                         'passed timedeltas does not conform '
+                                         'to passed frequency {freq}'
+                                         .format(infer=inferred,
+                                                 freq=freq.freqstr))
                 index.freq = freq
                 return index
 
@@ -319,8 +320,8 @@ class TimedeltaIndex(DatetimeIndexOpsMixin, TimelikeOps, Int64Index):
             # update name when delta is index
             name = com._maybe_match_name(self, delta)
         else:
-            raise ValueError("cannot add the type {0} to a TimedeltaIndex"
-                             .format(type(delta)))
+            raise ValueError("cannot add the type {typ} to a TimedeltaIndex"
+                             .format(typ=type(delta)))
 
         result = TimedeltaIndex(new_values, freq='infer', name=name)
         return result
@@ -483,7 +484,8 @@ class TimedeltaIndex(DatetimeIndexOpsMixin, TimelikeOps, Int64Index):
         elif is_integer_dtype(dtype):
             return Index(self.values.astype('i8', copy=copy), dtype='i8',
                          name=self.name)
-        raise ValueError('Cannot cast TimedeltaIndex to dtype %s' % dtype)
+        raise ValueError('Cannot cast TimedeltaIndex to dtype {typ}'
+                         .format(typ=dtype))
 
     def union(self, other):
         """

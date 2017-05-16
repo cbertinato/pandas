@@ -75,8 +75,9 @@ class NumericIndex(Index):
         try:
             return float(tolerance)
         except ValueError:
-            raise ValueError('tolerance argument for %s must be numeric: %r' %
-                             (type(self).__name__, tolerance))
+            raise ValueError('tolerance argument for {cls} must '
+                             'be numeric: {tol!r}'
+                             .format(cls=type(self).__name__, tol=tolerance))
 
     @classmethod
     def _assert_safe_casting(cls, data, subarr):
@@ -289,9 +290,9 @@ class Float64Index(NumericIndex):
         elif is_object_dtype(dtype):
             values = self._values.astype('object', copy=copy)
         else:
-            raise TypeError('Setting %s dtype to anything other than '
-                            'float64 or object is not supported' %
-                            self.__class__)
+            raise TypeError('Setting {typ} dtype to anything other than '
+                            'float64 or object is not supported'
+                            .format(typ=self.__class__))
         return Index(values, name=self.name, dtype=dtype)
 
     @Appender(_index_shared_docs['_convert_scalar_indexer'])

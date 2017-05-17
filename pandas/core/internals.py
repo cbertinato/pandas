@@ -112,9 +112,10 @@ class Block(PandasObject):
         self.values = values
 
         if ndim and len(self.mgr_locs) != len(self.values):
-            raise ValueError('Wrong number of items passed %d, placement '
-                             'implies %d' % (len(self.values),
-                                             len(self.mgr_locs)))
+            raise ValueError('Wrong number of items passed {got}, placement '
+                             'implies {expect}'
+                             .format(got=len(self.values),
+                                     expect=len(self.mgr_locs)))
 
     @property
     def _consolidate_key(self):
@@ -229,13 +230,18 @@ class Block(PandasObject):
         name = pprint_thing(self.__class__.__name__)
         if self._is_single_block:
 
-            result = '%s: %s dtype: %s' % (name, len(self), self.dtype)
+            result = '{name}: {len} dtype: {typ}'.format(name=name,
+                                                         len=len(self),
+                                                         typ=self.dtype)
 
         else:
 
             shape = ' x '.join([pprint_thing(s) for s in self.shape])
-            result = '%s: %s, %s, dtype: %s' % (name, pprint_thing(
-                self.mgr_locs.indexer), shape, self.dtype)
+            result = ('{name}: {idxr}, {shape}, dtype: {typ}'
+                      .format(name=name,
+                              idxr=pprint_thing(self.mgr_locs.indexer),
+                              shape=shape,
+                              typ=self.dtype))
 
         return result
 
@@ -314,7 +320,8 @@ class Block(PandasObject):
         Reindex using pre-computed indexer information
         """
         if axis < 1:
-            raise AssertionError('axis must be at least 1, got %d' % axis)
+            raise AssertionError('axis must be at least 1, got {axis}'
+                                 .format(axis=axis))
         if fill_value is None:
             fill_value = self.fill_value
 
@@ -540,9 +547,9 @@ class Block(PandasObject):
         errors_legal_values = ('raise', 'ignore')
 
         if errors not in errors_legal_values:
-            invalid_arg = ("Expected value of kwarg 'errors' to be one of {}. "
-                           "Supplied value is '{}'".format(
-                               list(errors_legal_values), errors))
+            invalid_arg = ("Expected value of kwarg 'errors' to be one "
+                           "of {vals}. Supplied value is '{err}'"
+                           .format(vals=list(errors_legal_values), err=errors))
             raise ValueError(invalid_arg)
 
         # may need to convert to categorical
@@ -591,11 +598,14 @@ class Block(PandasObject):
 
         if newb.is_numeric and self.is_numeric:
             if newb.shape != self.shape:
-                raise TypeError("cannot set astype for copy = [%s] for dtype "
-                                "(%s [%s]) with smaller itemsize that current "
-                                "(%s [%s])" % (copy, self.dtype.name,
-                                               self.itemsize, newb.dtype.name,
-                                               newb.itemsize))
+                raise TypeError("cannot set astype for copy = [{copy}] for "
+                                "dtype ({name1} [{sz1}]) with smaller "
+                                "itemsize than current ({name2} [{sz2}])"
+                                .format(copy=copy,
+                                        name1=self.dtype.name,
+                                        sz1=self.itemsize,
+                                        name2=newb.dtype.name,
+                                        sz2=newb.itemsize))
         return newb
 
     def convert(self, copy=True, **kwargs):
@@ -1086,7 +1096,8 @@ class Block(PandasObject):
                                      fill_value=fill_value, inplace=inplace,
                                      downcast=downcast, mgr=mgr, **kwargs)
 
-        raise ValueError("invalid method '{0}' to interpolate.".format(method))
+        raise ValueError("invalid method '{method}' to interpolate."
+                         .format(method=method))
 
     def _interpolate_with_fill(self, method='pad', axis=0, inplace=False,
                                limit=None, fill_value=None, coerce=False,
@@ -1134,8 +1145,8 @@ class Block(PandasObject):
 
         if method in ('krogh', 'piecewise_polynomial', 'pchip'):
             if not index.is_monotonic:
-                raise ValueError("{0} interpolation requires that the "
-                                 "index be monotonic.".format(method))
+                raise ValueError("{method} interpolation requires that the "
+                                 "index be monotonic.".format(method=method))
         # process 1-d slices in the axis direction
 
         def func(x):
@@ -1262,9 +1273,10 @@ class Block(PandasObject):
                     is_transposed = True
                 else:
                     # this is a broadcast error heree
-                    raise ValueError("cannot broadcast shape [%s] with block "
-                                     "values [%s]" % (values.T.shape,
-                                                      other.shape))
+                    raise ValueError("cannot broadcast shape [{shape1}] with "
+                                     "block values [{shape2}]"
+                                     .format(shape1=values.T.shape,
+                                             shape2=other.shape))
 
         transf = (lambda x: x.T) if is_transposed else (lambda x: x)
 
@@ -1310,8 +1322,9 @@ class Block(PandasObject):
 
             if raise_on_error:
                 # The 'detail' variable is defined in outer scope.
-                raise TypeError('Could not operate %s with block values %s' %
-                                (repr(other), str(detail)))  # noqa
+                raise TypeError('Could not operate {other!r} with block '
+                                'values {detail!s}'.format(other=other,
+                                                           detail=detail))  # noqa
             else:
                 # return the values
                 result = np.empty(values.shape, dtype='O')
@@ -1338,11 +1351,12 @@ class Block(PandasObject):
                 # differentiate between an invalid ndarray-ndarray comparison
                 # and an invalid type comparison
                 if isinstance(values, np.ndarray) and is_list_like(other):
-                    raise ValueError('Invalid broadcasting comparison [%s] '
-                                     'with block values' % repr(other))
+                    raise ValueError('Invalid broadcasting comparison '
+                                     '[{other!r}] with block values'
+                                     .format(other=other))
 
-                raise TypeError('Could not compare [%s] with block values' %
-                                repr(other))
+                raise TypeError('Could not compare [{other!r}] with block '
+                                'values'.format(other=other))
 
         # transpose if needed
         result = transf(result)
@@ -1408,8 +1422,9 @@ class Block(PandasObject):
                     cond, values, other, raise_on_error=True))
             except Exception as detail:
                 if raise_on_error:
-                    raise TypeError('Could not operate [%s] with block values '
-                                    '[%s]' % (repr(other), str(detail)))
+                    raise TypeError('Could not operate [{other!r}] with '
+                                    'block values [{detail!s}]'
+                                    .format(other=other, detail=detail))
                 else:
                     # return the values
                     result = np.empty(values.shape, dtype='float64')
@@ -1621,7 +1636,8 @@ class NonConsolidatableMixIn(object):
         self.ndim = ndim
 
         if not isinstance(values, self._holder):
-            raise TypeError("values must be {0}".format(self._holder.__name__))
+            raise TypeError("values must be {name}"
+                            .format(name=self._holder.__name__))
 
         self.values = values
 
@@ -1643,11 +1659,13 @@ class NonConsolidatableMixIn(object):
         if self.ndim == 2 and isinstance(col, tuple):
             col, loc = col
             if not is_null_slice(col) and col != 0:
-                raise IndexError("{0} only contains one item".format(self))
+                raise IndexError("{self} only contains one item"
+                                 .format(self=self))
             return self.values[loc]
         else:
             if col != 0:
-                raise IndexError("{0} only contains one item".format(self))
+                raise IndexError("{self} only contains one item"
+                                 .format(self=self))
             return self.values
 
     def should_store(self, value):
@@ -2523,7 +2541,8 @@ class DatetimeTZBlock(NonConsolidatableMixIn, DatetimeBlock):
         if isinstance(slicer, tuple):
             col, loc = slicer
             if not is_null_slice(col) and col != 0:
-                raise IndexError("{0} only contains one item".format(self))
+                raise IndexError("{self} only contains one item"
+                                 .format(self=self))
             return self.values[loc]
         return self.values[slicer]
 
@@ -2892,9 +2911,11 @@ class BlockManager(PandasObject):
                                          "items")
             else:
                 if self.ndim != block.ndim:
-                    raise AssertionError('Number of Block dimensions (%d) '
-                                         'must equal number of axes (%d)' %
-                                         (block.ndim, self.ndim))
+                    raise AssertionError('Number of Block dimensions '
+                                         '({blkdim}) must equal number of '
+                                         'axes ({axdim})'
+                                         .format(blkdim=block.ndim,
+                                                 axdim=self.ndim))
 
         if do_integrity_check:
             self._verify_integrity()
@@ -2936,9 +2957,9 @@ class BlockManager(PandasObject):
         new_len = len(new_labels)
 
         if new_len != old_len:
-            raise ValueError('Length mismatch: Expected axis has %d elements, '
-                             'new values have %d elements' %
-                             (old_len, new_len))
+            raise ValueError('Length mismatch: Expected axis has {old} '
+                             'elements, new values have {new} elements'
+                             .format(old=old_len, new=new_len))
 
         self.axes[axis] = new_labels
 
@@ -3095,12 +3116,12 @@ class BlockManager(PandasObject):
         output = pprint_thing(self.__class__.__name__)
         for i, ax in enumerate(self.axes):
             if i == 0:
-                output += u('\nItems: %s') % ax
+                output += u('\nItems: {ax}').format(ax=ax)
             else:
-                output += u('\nAxis %d: %s') % (i, ax)
+                output += u('\nAxis {i}: {ax}').format(i=i, ax=ax)
 
         for block in self.blocks:
-            output += u('\n%s') % pprint_thing(block)
+            output += u('\n{blk}').format(blk=pprint_thing(block))
         return output
 
     def _verify_integrity(self):
@@ -3111,9 +3132,10 @@ class BlockManager(PandasObject):
                 construction_error(tot_items, block.shape[1:], self.axes)
         if len(self.items) != tot_items:
             raise AssertionError('Number of manager items must equal union of '
-                                 'block items\n# manager items: {0}, # '
-                                 'tot_items: {1}'.format(
-                                     len(self.items), tot_items))
+                                 'block items\n# manager items: {numitems}, # '
+                                 'tot_items: {totitems}'.format(
+                                     numitems=len(self.items),
+                                     totitems=tot_items))
 
     def apply(self, f, axes=None, filter=None, do_integrity_check=False,
               consolidate=True, **kwargs):
@@ -3579,8 +3601,8 @@ class BlockManager(PandasObject):
 
     def xs(self, key, axis=1, copy=True, takeable=False):
         if axis < 1:
-            raise AssertionError('Can only take xs across axis >= 1, got %d' %
-                                 axis)
+            raise AssertionError('Can only take xs across axis >= 1, '
+                                 'got {axis}'.format(axis=axis))
 
         # take by position
         if takeable:
@@ -3902,7 +3924,8 @@ class BlockManager(PandasObject):
         """
         if not allow_duplicates and item in self.items:
             # Should this be a different kind of error??
-            raise ValueError('cannot insert {}, already exists'.format(item))
+            raise ValueError('cannot insert {item}, already exists'
+                             .format(item=item))
 
         if not isinstance(loc, int):
             raise TypeError("loc must be int")
@@ -4132,7 +4155,9 @@ class BlockManager(PandasObject):
         """
         if self.ndim != other.ndim:
             raise AssertionError('Number of dimensions must agree '
-                                 'got %d and %d' % (self.ndim, other.ndim))
+                                 'got {selfdim} and {otherdim}'
+                                 .format(selfdim=self.ndim,
+                                         otherdim=other.ndim))
         for ax, oax in zip(self.axes[1:], other.axes[1:]):
             if not ax.equals(oax):
                 return False
@@ -4371,8 +4396,8 @@ def construction_error(tot_items, block_shape, axes, e=None):
         raise e
     if block_shape[0] == 0:
         raise ValueError("Empty data passed with indices specified.")
-    raise ValueError("Shape of passed values is {0}, indices imply {1}".format(
-        passed, implied))
+    raise ValueError("Shape of passed values is {passed}, indices "
+                     "imply {implied}".format(passed=passed, implied=implied))
 
 
 def create_block_manager_from_blocks(blocks, axes):
@@ -4706,12 +4731,13 @@ def _maybe_compare(a, b, op):
         type_names = [type(a).__name__, type(b).__name__]
 
         if is_a_array:
-            type_names[0] = 'ndarray(dtype=%s)' % a.dtype
+            type_names[0] = 'ndarray(dtype={typ})'.format(typ=a.dtype)
 
         if is_b_array:
-            type_names[1] = 'ndarray(dtype=%s)' % b.dtype
+            type_names[1] = 'ndarray(dtype={typ})'.format(typ=b.dtype)
 
-        raise TypeError("Cannot compare types %r and %r" % tuple(type_names))
+        raise TypeError("Cannot compare types {!r} and {!r}"
+                        .format(*tuple(type_names)))
     return result
 
 
@@ -4791,8 +4817,8 @@ def items_overlap_with_suffix(left, lsuffix, right, rsuffix):
         return left, right
     else:
         if not lsuffix and not rsuffix:
-            raise ValueError('columns overlap but no suffix specified: %s' %
-                             to_rename)
+            raise ValueError('columns overlap but no suffix specified: {sfx}'
+                             .format(sfx=to_rename))
 
         def lrenamer(x):
             if x in to_rename:
@@ -5256,8 +5282,9 @@ class JoinUnit(object):
         self.shape = shape
 
     def __repr__(self):
-        return '%s(%r, %s)' % (self.__class__.__name__, self.block,
-                               self.indexers)
+        return '{cls}({blk!r}, {idx})'.format(cls=self.__class__.__name__,
+                                              blk=self.block,
+                                              idx=self.indexers)
 
     @cache_readonly
     def needs_filling(self):

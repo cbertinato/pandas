@@ -59,9 +59,9 @@ def _create_methods(arith_method, comp_method, bool_method,
 
         def names(x):
             if x[-1] == "_":
-                return "__%s_" % x
+                return "__{x}_".format(x=x)
             else:
-                return "__%s__" % x
+                return "__{x}__".format(x=x)
     else:
         names = lambda x: x
 
@@ -384,8 +384,8 @@ class _TimeOp(_Op):
             if name not in ('__div__', '__truediv__', '__mul__', '__rmul__'):
                 raise TypeError("can only operate on a timedelta and an "
                                 "integer or a float for division and "
-                                "multiplication, but the operator [%s] was"
-                                "passed" % name)
+                                "multiplication, but the operator [{op}] was"
+                                "passed".format(op=name))
 
         # 2 timedeltas
         elif ((self.is_timedelta_lhs and
@@ -398,7 +398,7 @@ class _TimeOp(_Op):
                             '__rsub__'):
                 raise TypeError("can only operate on a timedeltas for "
                                 "addition, subtraction, and division, but the"
-                                " operator [%s] was passed" % name)
+                                " operator [{op}] was passed".format(op=name))
 
         # datetime and timedelta/DateOffset
         elif (self.is_datetime_lhs and
@@ -407,23 +407,24 @@ class _TimeOp(_Op):
             if name not in ('__add__', '__radd__', '__sub__'):
                 raise TypeError("can only operate on a datetime with a rhs of "
                                 "a timedelta/DateOffset for addition and "
-                                "subtraction, but the operator [%s] was "
-                                "passed" % name)
+                                "subtraction, but the operator [{op}] was "
+                                "passed".format(op=name))
 
         elif (self.is_datetime_rhs and
               (self.is_timedelta_lhs or self.is_offset_lhs)):
             if name not in ('__add__', '__radd__', '__rsub__'):
                 raise TypeError("can only operate on a timedelta/DateOffset "
                                 "with a rhs of a datetime for addition, "
-                                "but the operator [%s] was passed" % name)
+                                "but the operator [{op}] was passed"
+                                .format(op=name))
 
         # 2 datetimes
         elif self.is_datetime_lhs and self.is_datetime_rhs:
 
             if name not in ('__sub__', '__rsub__'):
                 raise TypeError("can only operate on a datetimes for"
-                                " subtraction, but the operator [%s] was"
-                                " passed" % name)
+                                " subtraction, but the operator [{op}] was"
+                                " passed".format(op=name))
 
             # if tz's must be equal (same or None)
             if getattr(lvalues, 'tz', None) != getattr(rvalues, 'tz', None):
@@ -436,7 +437,7 @@ class _TimeOp(_Op):
             if name not in ('__add__', '__radd__'):
                 raise TypeError("can only operate on a timedelta/DateOffset "
                                 "and a datetime for addition, but the "
-                                "operator [%s] was passed" % name)
+                                "operator [{op}] was passed".format(op=name))
         else:
             raise TypeError('cannot operate on a series without a rhs '
                             'of a series/ndarray of type datetime64[ns] '
@@ -494,7 +495,7 @@ class _TimeOp(_Op):
                 values = values.to_timestamp().to_series()
             elif name not in ('__truediv__', '__div__', '__mul__', '__rmul__'):
                 raise TypeError("incompatible type for a datetime/timedelta "
-                                "operation [{0}]".format(name))
+                                "operation [{name}]".format(name=name))
         elif inferred_type == 'floating':
             if (isna(values).all() and
                     name in ('__add__', '__radd__', '__sub__', '__rsub__')):
@@ -504,8 +505,9 @@ class _TimeOp(_Op):
         elif self._is_offset(values):
             return values
         else:
-            raise TypeError("incompatible type [{0}] for a datetime/timedelta"
-                            " operation".format(np.array(values).dtype))
+            raise TypeError("incompatible type [{typ}] for a "
+                            "datetime/timedelta operation"
+                            .format(typ=np.array(values).dtype))
 
         return values
 
@@ -902,9 +904,9 @@ def _bool_method_SERIES(op, name, str_rep):
                         y = bool(y)
                     result = lib.scalar_binop(x, y, op)
                 except:
-                    raise TypeError("cannot compare a dtyped [{0}] array with "
-                                    "a scalar of type [{1}]".format(
-                                        x.dtype, type(y).__name__))
+                    raise TypeError("cannot compare a dtyped [{typ1}] array "
+                                    "with a scalar of type [{typ2}]".format(
+                                        typ1=x.dtype, typ2=type(y).__name__))
 
         return result
 
@@ -1136,14 +1138,17 @@ def _align_method_FRAME(left, right, axis):
     """ convert rhs to meet lhs dims if input is list, tuple or np.ndarray """
 
     def to_series(right):
-        msg = 'Unable to coerce to Series, length must be {0}: given {1}'
+        msg = ('Unable to coerce to Series, length must be {expect}: '
+               'given {got}')
         if axis is not None and left._get_axis_name(axis) == 'index':
             if len(left.index) != len(right):
-                raise ValueError(msg.format(len(left.index), len(right)))
+                raise ValueError(msg.format(expect=len(left.index),
+                                            got=len(right)))
             right = left._constructor_sliced(right, index=left.index)
         else:
             if len(left.columns) != len(right):
-                raise ValueError(msg.format(len(left.columns), len(right)))
+                raise ValueError(msg.format(expect=len(left.columns),
+                                            got=len(right)))
             right = left._constructor_sliced(right, index=left.columns)
         return right
 
@@ -1158,14 +1163,16 @@ def _align_method_FRAME(left, right, axis):
         elif right.ndim == 2:
             if left.shape != right.shape:
                 msg = ("Unable to coerce to DataFrame, "
-                       "shape must be {0}: given {1}")
-                raise ValueError(msg.format(left.shape, right.shape))
+                       "shape must be {expect}: given {got}")
+                raise ValueError(msg.format(expect=left.shape,
+                                            got=right.shape))
 
             right = left._constructor(right, index=left.index,
                                       columns=left.columns)
         else:
-            msg = 'Unable to coerce to Series/DataFrame, dim must be <= 2: {0}'
-            raise ValueError(msg.format(right.shape, ))
+            msg = ('Unable to coerce to Series/DataFrame, dim '
+                   'must be <= 2: {shape}')
+            raise ValueError(msg.format(shape=right.shape, ))
 
     return right
 
@@ -1295,7 +1302,7 @@ def _flex_comp_method_FRAME(op, name, str_rep=None, default_axis='columns',
 
 
 def _comp_method_FRAME(func, name, str_rep, masker=False):
-    @Appender('Wrapper for comparison method %s' % name)
+    @Appender('Wrapper for comparison method {name}'.format(name=name))
     def f(self, other):
         if isinstance(other, pd.DataFrame):  # Another DataFrame
             return self._compare_frame(other, func, str_rep)
@@ -1345,9 +1352,9 @@ def _arith_method_PANEL(op, name, str_rep=None, fill_zeros=None,
     # work only for scalars
     def f(self, other):
         if not is_scalar(other):
-            raise ValueError('Simple arithmetic with %s can only be '
-                             'done with scalar values' %
-                             self._constructor.__name__)
+            raise ValueError('Simple arithmetic with {o[]} can only be '
+                             'done with scalar values'
+                             .format(op=self._constructor.__name__))
 
         return self._combine(other, op)
 
@@ -1380,7 +1387,7 @@ def _comp_method_PANEL(op, name, str_rep=None, masker=False):
 
         return result
 
-    @Appender('Wrapper for comparison method %s' % name)
+    @Appender('Wrapper for comparison method {name}'.format(name=name))
     def f(self, other, axis=None):
         # Validate the axis parameter
         if axis is not None:
@@ -1390,8 +1397,8 @@ def _comp_method_PANEL(op, name, str_rep=None, masker=False):
             return self._compare_constructor(other, na_op, try_cast=False)
         elif isinstance(other, (self._constructor_sliced, pd.DataFrame,
                                 ABCSeries)):
-            raise Exception("input needs alignment for this object [%s]" %
-                            self._constructor)
+            raise Exception("input needs alignment for this object [{obj}]"
+                            .format(obj=self._constructor))
         else:
             return self._combine_const(other, na_op, try_cast=False)
 

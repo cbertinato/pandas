@@ -70,9 +70,9 @@ class disallow(object):
         def _f(*args, **kwargs):
             obj_iter = itertools.chain(args, compat.itervalues(kwargs))
             if any(self.check(obj) for obj in obj_iter):
-                raise TypeError('reduction operation {0!r} not allowed for '
+                raise TypeError('reduction operation {op!r} not allowed for '
                                 'this dtype'.format(
-                                    f.__name__.replace('nan', '')))
+                                    op=f.__name__.replace('nan', '')))
             try:
                 with np.errstate(invalid='ignore'):
                     return f(*args, **kwargs)
@@ -786,7 +786,8 @@ def _ensure_numeric(x):
             try:
                 x = complex(x)
             except Exception:
-                raise TypeError('Could not convert %s to numeric' % str(x))
+                raise TypeError('Could not convert {x!s} to numeric'
+                                .format(x=x))
     return x
 
 # NA-friendly array comparisons

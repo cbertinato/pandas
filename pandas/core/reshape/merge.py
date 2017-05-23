@@ -536,26 +536,27 @@ class _MergeOperation(object):
         if not isinstance(left, DataFrame):
             raise ValueError(
                 'can not merge DataFrame with instance of '
-                'type {0}'.format(type(left)))
+                'type {typ}'.format(typ=type(left)))
         if not isinstance(right, DataFrame):
             raise ValueError(
                 'can not merge DataFrame with instance of '
-                'type {0}'.format(type(right)))
+                'type {typ}'.format(typ=type(right)))
 
         if not is_bool(left_index):
             raise ValueError(
                 'left_index parameter must be of type bool, not '
-                '{0}'.format(type(left_index)))
+                '{typ}'.format(typ=type(left_index)))
         if not is_bool(right_index):
             raise ValueError(
                 'right_index parameter must be of type bool, not '
-                '{0}'.format(type(right_index)))
+                '{typ}'.format(typ=type(right_index)))
 
         # warn user when merging between different levels
         if left.columns.nlevels != right.columns.nlevels:
             msg = ('merging between different levels can give an unintended '
-                   'result ({0} levels on the left, {1} on the right)')
-            msg = msg.format(left.columns.nlevels, right.columns.nlevels)
+                   'result ({left} levels on the left, {right} on the right)')
+            msg = msg.format(left=left.columns.nlevels,
+                             right=right.columns.nlevels)
             warnings.warn(msg, UserWarning)
 
         self._validate_specification()
@@ -613,7 +614,8 @@ class _MergeOperation(object):
         for i in ['_left_indicator', '_right_indicator']:
             if i in columns:
                 raise ValueError("Cannot use `indicator=True` option when "
-                                 "data contains a column named {}".format(i))
+                                 "data contains a column named {col}"
+                                 .format(col=i))
         if self.indicator_name in columns:
             raise ValueError(
                 "Cannot use name of an existing column for indicator column")
@@ -717,7 +719,8 @@ class _MergeOperation(object):
                 if name in result:
                     result[name] = key_col
                 else:
-                    result.insert(i, name or 'key_%d' % i, key_col)
+                    result.insert(i, name or 'key_{col}'.format(col=i),
+                                  key_col)
 
     def _get_join_indexers(self):
         """ return the join indexers """
@@ -952,8 +955,8 @@ class _MergeOperation(object):
                 if len(common_cols) == 0:
                     raise MergeError('No common columns to perform merge on')
                 if not common_cols.is_unique:
-                    raise MergeError("Data columns not unique: %s"
-                                     % repr(common_cols))
+                    raise MergeError("Data columns not unique: {cols!r}"
+                                     .format(cols=common_cols))
                 self.left_on = self.right_on = common_cols
         elif self.on is not None:
             if self.left_on is not None or self.right_on is not None:
@@ -1119,12 +1122,13 @@ class _OrderedMerge(_MergeOperation):
 
 
 def _asof_function(direction, on_type):
-    return getattr(libjoin, 'asof_join_%s_%s' % (direction, on_type), None)
+    return getattr(libjoin, 'asof_join_{dir}_{ontyp}'
+                   .format(dir=direction, ontyp=on_type), None)
 
 
 def _asof_by_function(direction, on_type, by_type):
-    return getattr(libjoin, 'asof_join_%s_%s_by_%s' %
-                   (direction, on_type, by_type), None)
+    return getattr(libjoin, 'asof_join_{dir}_{ontyp}_by_{bytyp}'
+                   .format(dir=direction, ontyp=on_type, bytyp=by_type), None)
 
 
 _type_casters = {
@@ -1264,7 +1268,7 @@ class _AsOfMerge(_OrderedMerge):
                 lt = left_join_keys[-1]
 
             msg = "incompatible tolerance, must be compat " \
-                  "with type {0}".format(type(lt))
+                  "with type {typ}".format(typ=type(lt))
 
             if is_datetime64_dtype(lt) or is_datetime64tz_dtype(lt):
                 if not isinstance(self.tolerance, Timedelta):
@@ -1284,7 +1288,8 @@ class _AsOfMerge(_OrderedMerge):
         # validate allow_exact_matches
         if not is_bool(self.allow_exact_matches):
             raise MergeError("allow_exact_matches must be boolean, "
-                             "passed {0}".format(self.allow_exact_matches))
+                             "passed {got}"
+                             .format(got=self.allow_exact_matches))
 
         return left_join_keys, right_join_keys, join_names
 

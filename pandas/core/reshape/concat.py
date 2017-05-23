@@ -309,8 +309,9 @@ class _Concatenator(object):
 
         self._is_series = isinstance(sample, Series)
         if not 0 <= axis <= sample.ndim:
-            raise AssertionError("axis must be between 0 and {0}, "
-                                 "input was {1}".format(sample.ndim, axis))
+            raise AssertionError("axis must be between 0 and {ndim}, "
+                                 "input was {ax}"
+                                 .format(ndim=sample.ndim, ax=axis))
 
         # if we have mixed ndims, then convert to highest ndim
         # creating column numbers as needed
@@ -432,7 +433,8 @@ class _Concatenator(object):
         else:
             if len(self.join_axes) != ndim - 1:
                 raise AssertionError("length of join_axes must not be "
-                                     "equal to {0}".format(ndim - 1))
+                                     "equal to {length}"
+                                     .format(length=ndim - 1))
 
             # ufff...
             indices = compat.lrange(ndim)
@@ -452,7 +454,8 @@ class _Concatenator(object):
                 all_indexes = [x._data.axes[i] for x in self.objs]
             except IndexError:
                 types = [type(x).__name__ for x in self.objs]
-                raise TypeError("Cannot concatenate list of %s" % types)
+                raise TypeError("Cannot concatenate list of {typs}"
+                                .format(typs=types))
 
         return _get_combined_index(all_indexes, intersect=self.intersect)
 
@@ -474,7 +477,7 @@ class _Concatenator(object):
                     if not isinstance(x, Series):
                         raise TypeError("Cannot concatenate type 'Series' "
                                         "with object of type "
-                                        "%r" % type(x).__name__)
+                                        "{typ!r}".format(typ=type(x).__name__))
                     if x.name is not None:
                         names[i] = x.name
                         has_names = True
@@ -508,8 +511,8 @@ class _Concatenator(object):
         if self.verify_integrity:
             if not concat_index.is_unique:
                 overlap = concat_index.get_duplicates()
-                raise ValueError('Indexes have overlapping values: %s'
-                                 % str(overlap))
+                raise ValueError('Indexes have overlapping values: {val!s}'
+                                 .format(val=overlap))
 
 
 def _concat_indexes(indexes):
@@ -550,8 +553,8 @@ def _make_concat_multiindex(indexes, keys, levels=None, names=None):
                 try:
                     i = level.get_loc(key)
                 except KeyError:
-                    raise ValueError('Key %s not in level %s'
-                                     % (str(key), str(level)))
+                    raise ValueError('Key {key!s} not in level {lvl!s}'
+                                     .format(key=key, lvl=level))
 
                 to_concat.append(np.repeat(i, len(index)))
             label_list.append(np.concatenate(to_concat))
@@ -600,8 +603,8 @@ def _make_concat_multiindex(indexes, keys, levels=None, names=None):
 
         mask = mapped == -1
         if mask.any():
-            raise ValueError('Values not found in passed level: %s'
-                             % str(hlevel[mask]))
+            raise ValueError('Values not found in passed level: {val!s}'
+                             .format(val=hlevel[mask]))
 
         new_labels.append(np.repeat(mapped, n))
 

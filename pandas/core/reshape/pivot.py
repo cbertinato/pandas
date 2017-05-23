@@ -212,7 +212,8 @@ def _add_margins(table, data, values, rows, cols, aggfunc,
     if not isinstance(margins_name, compat.string_types):
         raise ValueError('margins_name argument must be a string')
 
-    exception_msg = 'Conflicting name "{0}" in margins'.format(margins_name)
+    exception_msg = ('Conflicting name "{name}" in margins'
+                     .format(name=margins_name))
     for level in table.index.names:
         if margins_name in table.index.get_level_values(level):
             raise ValueError(exception_msg)
@@ -623,7 +624,7 @@ def _get_names(arrs, names, prefix='row'):
             if isinstance(arr, Series) and arr.name is not None:
                 names.append(arr.name)
             else:
-                names.append('%s_%d' % (prefix, i))
+                names.append('{prefix}_{i}'.format(prefix=prefix, i=i))
     else:
         if len(names) != len(arrs):
             raise AssertionError('arrays and names must have the same length')

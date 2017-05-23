@@ -36,7 +36,8 @@ def create_nd_panel_factory(klass_name, orders, slices, slicer, aliases=None,
         try:
             slicer = getattr(pandas, slicer)
         except:
-            raise Exception("cannot create this slicer [%s]" % slicer)
+            raise Exception("cannot create this slicer [{slicer}]"
+                            .format(slicer=slicer))
 
     # build the klass
     ns = {} if not ns else ns
@@ -63,8 +64,8 @@ def create_nd_panel_factory(klass_name, orders, slices, slicer, aliases=None,
                       FutureWarning, stacklevel=2)
 
         if not (kwargs.get('data') or len(args)):
-            raise Exception("must supply at least a data argument to [%s]" %
-                            klass_name)
+            raise Exception("must supply at least a data argument to [{klass}]"
+                            .format(klass=klass_name))
         if 'copy' not in kwargs:
             kwargs['copy'] = False
         if 'dtype' not in kwargs:

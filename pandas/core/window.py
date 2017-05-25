@@ -175,8 +175,8 @@ class _Window(PandasObject, SelectionMixin):
         if attr in self.obj:
             return self[attr]
 
-        raise AttributeError("%r object has no attribute %r" %
-                             (type(self).__name__, attr))
+        raise AttributeError("{name!r} object has no attribute {attr!r}"
+                             .format(name=type(self).__name__, attr=attr))
 
     def _dir_additions(self):
         return self.obj._dir_additions()
@@ -233,8 +233,8 @@ class _Window(PandasObject, SelectionMixin):
             try:
                 values = _ensure_float64(values)
             except (ValueError, TypeError):
-                raise TypeError("cannot handle this type -> {0}"
-                                "".format(values.dtype))
+                raise TypeError("cannot handle this type -> {dtype}"
+                                "".format(dtype=values.dtype))
 
         if kill_inf:
             values = values.copy()
@@ -523,11 +523,13 @@ class Window(_Window):
                                   'weight')
 
             if not isinstance(self.win_type, compat.string_types):
-                raise ValueError('Invalid win_type {0}'.format(self.win_type))
+                raise ValueError('Invalid win_type {type}'
+                                 .format(type=self.win_type))
             if getattr(sig, self.win_type, None) is None:
-                raise ValueError('Invalid win_type {0}'.format(self.win_type))
+                raise ValueError('Invalid win_type {type}'
+                                 .format(type=self.win_type))
         else:
-            raise ValueError('Invalid window {0}'.format(window))
+            raise ValueError('Invalid window {window}'.format(window=window))
 
     def _prep_window(self, **kwargs):
         """
@@ -554,11 +556,11 @@ class Window(_Window):
                 return win_type
 
             def _pop_args(win_type, arg_names, kwargs):
-                msg = '%s window requires %%s' % win_type
+                msg = '{type} window requires {{n}}'.format(type=win_type)
                 all_args = []
                 for n in arg_names:
                     if n not in kwargs:
-                        raise ValueError(msg % n)
+                        raise ValueError(msg.format(n=n))
                     all_args.append(kwargs.pop(n))
                 return all_args
 
@@ -775,7 +777,7 @@ class _Rolling(_Window):
                 cfunc = getattr(_window, func, None)
                 if cfunc is None:
                     raise ValueError("we do not support this function "
-                                     "in _window.{0}".format(func))
+                                     "in _window.{func}".format(func=func))
 
                 def func(arg, window, min_periods=None, closed=None):
                     minp = check_minp(min_periods, window)
@@ -1087,9 +1089,9 @@ class Rolling(_Rolling_and_Expanding):
               self.on in self.obj.columns):
             return pd.Index(self.obj[self.on])
         else:
-            raise ValueError("invalid on specified as {0}, "
+            raise ValueError("invalid on specified as {on}, "
                              "must be a column (if DataFrame) "
-                             "or None".format(self.on))
+                             "or None".format(on=self.on))
 
     def validate(self):
         super(Rolling, self).validate()
@@ -1130,8 +1132,8 @@ class Rolling(_Rolling_and_Expanding):
         """ validate on is monotonic """
         if not self._on.is_monotonic:
             formatted = self.on or 'index'
-            raise ValueError("{0} must be "
-                             "monotonic".format(formatted))
+            raise ValueError("{formatted} must be "
+                             "monotonic".format(formatted=formatted))
 
     def _validate_freq(self):
         """ validate & return our freq """
@@ -1139,9 +1141,9 @@ class Rolling(_Rolling_and_Expanding):
         try:
             return to_offset(self.window)
         except (TypeError, ValueError):
-            raise ValueError("passed window {0} in not "
+            raise ValueError("passed window {window} in not "
                              "compat with a datetimelike "
-                             "index".format(self.window))
+                             "index".format(window=self.window))
 
     _agg_doc = dedent("""
     Examples
@@ -1771,7 +1773,7 @@ class EWM(_Rolling):
                 cfunc = getattr(_window, func, None)
                 if cfunc is None:
                     raise ValueError("we do not support this function "
-                                     "in _window.{0}".format(func))
+                                     "in _window.{func}".format(func=func))
 
                 def func(arg):
                     return cfunc(arg, self.com, int(self.adjust),
@@ -2062,7 +2064,7 @@ def _prep_binary(arg1, arg2):
 def rolling(obj, win_type=None, **kwds):
     from pandas import Series, DataFrame
     if not isinstance(obj, (Series, DataFrame)):
-        raise TypeError('invalid type: %s' % type(obj))
+        raise TypeError('invalid type: {typ}'.format(typ=type(obj)))
 
     if win_type is not None:
         return Window(obj, win_type=win_type, **kwds)
@@ -2076,7 +2078,7 @@ rolling.__doc__ = Window.__doc__
 def expanding(obj, **kwds):
     from pandas import Series, DataFrame
     if not isinstance(obj, (Series, DataFrame)):
-        raise TypeError('invalid type: %s' % type(obj))
+        raise TypeError('invalid type: {typ}'.format(typ=type(obj)))
 
     return Expanding(obj, **kwds)
 
@@ -2087,7 +2089,7 @@ expanding.__doc__ = Expanding.__doc__
 def ewm(obj, **kwds):
     from pandas import Series, DataFrame
     if not isinstance(obj, (Series, DataFrame)):
-        raise TypeError('invalid type: %s' % type(obj))
+        raise TypeError('invalid type: {typ}'.format(typ=type(obj)))
 
     return EWM(obj, **kwds)
 

@@ -52,8 +52,8 @@ def _arith_method(op, name, str_rep=None, default_axis=None, fill_zeros=None,
     def wrapper(self, other):
         if isinstance(other, np.ndarray):
             if len(self) != len(other):
-                raise AssertionError("length mismatch: %d vs. %d" %
-                                     (len(self), len(other)))
+                raise AssertionError("length mismatch: {slf} vs. {other}"
+                                     .format(slf=len(self), other=len(other)))
             if not isinstance(other, ABCSparseArray):
                 dtype = getattr(other, 'dtype', None)
                 other = SparseArray(other, fill_value=self.fill_value,
@@ -66,7 +66,8 @@ def _arith_method(op, name, str_rep=None, default_axis=None, fill_zeros=None,
 
             return _wrap_result(name, result, self.sp_index, fill)
         else:  # pragma: no cover
-            raise TypeError('operation with %s not supported' % type(other))
+            raise TypeError('operation with {other} not supported'
+                            .format(other=type(other)))
 
     if name.startswith("__"):
         name = name[2:-2]
@@ -218,9 +219,9 @@ class SparseArray(PandasObject, np.ndarray):
             else:
                 values = _sanitize_values(data)
                 if len(values) != sparse_index.npoints:
-                    raise AssertionError("Non array-like type {0} must have"
+                    raise AssertionError("Non array-like type {typ} must have"
                                          " the same length as the"
-                                         " index".format(type(values)))
+                                         " index".format(typ=type(values)))
         # Create array, do *not* copy data by default
         if copy:
             subarr = np.array(values, dtype=dtype, copy=True)
@@ -377,8 +378,8 @@ class SparseArray(PandasObject, np.ndarray):
         if is_dtype_equal(self.dtype, new_dtype):
             self._fill_value = fill_value
         else:
-            msg = 'unable to set fill_value {0} to {1} dtype'
-            raise ValueError(msg.format(value, self.dtype))
+            msg = 'unable to set fill_value {val} to {dtype} dtype'
+            raise ValueError(msg.format(val=value, dtype=self.dtype))
 
     def get_values(self, fill=None):
         """ return a dense representation """
@@ -466,7 +467,8 @@ class SparseArray(PandasObject, np.ndarray):
         nv.validate_take(tuple(), kwargs)
 
         if axis:
-            raise ValueError("axis must be 0, input was {0}".format(axis))
+            raise ValueError("axis must be 0, input was {axis}"
+                             .format(axis=axis))
 
         if is_integer(indices):
             # return scalar
@@ -543,8 +545,8 @@ class SparseArray(PandasObject, np.ndarray):
             else:
                 fill_value = dtype.type(self.fill_value)
         except ValueError:
-            msg = 'unable to coerce current fill_value {0} to {1} dtype'
-            raise ValueError(msg.format(self.fill_value, dtype))
+            msg = 'unable to coerce current fill_value {val} to {dtype} dtype'
+            raise ValueError(msg.format(val=self.fill_value, dtype=dtype))
         return self._simple_new(sp_values, self.sp_index,
                                 fill_value=fill_value)
 

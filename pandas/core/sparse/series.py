@@ -65,7 +65,8 @@ def _arith_method(op, name, str_rep=None, default_axis=None, fill_zeros=None,
                                      index=self.index,
                                      name=self.name)
         else:  # pragma: no cover
-            raise TypeError('operation with %s not supported' % type(other))
+            raise TypeError('operation with {typ} not supported'
+                            .format(typ=type(other)))
 
     wrapper.__name__ = name
     if name.startswith("__"):
@@ -295,7 +296,7 @@ class SparseSeries(Series):
     def __unicode__(self):
         # currently, unicode is same as repr...fixes infinite loop
         series_rep = Series.__unicode__(self)
-        rep = '%s\n%s' % (series_rep, repr(self.sp_index))
+        rep = '{rep}\n{idx!r}'.format(rep=series_rep, idx=self.sp_index)
         return rep
 
     def __array_wrap__(self, result, context=None):

@@ -105,7 +105,7 @@ def _coerce_method(converter):
         if len(self) == 1:
             return converter(self.iloc[0])
         raise TypeError("cannot convert the series to "
-                        "{0}".format(str(converter)))
+                        "{convert!s}".format(convert=converter))
 
     return wrapper
 
@@ -234,8 +234,8 @@ class Series(base.IndexOpsMixin, strings.StringAccessorMixin,
                   (compat.PY3 and isinstance(data, map))):
                 data = list(data)
             elif isinstance(data, (set, frozenset)):
-                raise TypeError("{0!r} type is unordered"
-                                "".format(data.__class__.__name__))
+                raise TypeError("{cls!r} type is unordered"
+                                "".format(cls=data.__class__.__name__))
             else:
 
                 # handle sparse passed here (and force conversion)
@@ -556,7 +556,8 @@ class Series(base.IndexOpsMixin, strings.StringAccessorMixin,
             self.name = name
 
         else:
-            raise Exception("cannot unpickle legacy formats -> [%s]" % state)
+            raise Exception("cannot unpickle legacy formats -> [{state}]"
+                            .format(state=state))
 
     # indexers
     @property
@@ -833,7 +834,8 @@ class Series(base.IndexOpsMixin, strings.StringAccessorMixin,
         indexer = self.index.get_indexer(key)
         mask = indexer == -1
         if mask.any():
-            raise ValueError('%s not contained in the index' % str(key[mask]))
+            raise ValueError('{mask!s} not contained in the index'
+                             .format(mask=key[mask]))
         self._set_values(indexer, value)
 
     def _set_values(self, key, value):
@@ -1077,8 +1079,8 @@ class Series(base.IndexOpsMixin, strings.StringAccessorMixin,
         # catch contract violations
         if not isinstance(result, compat.text_type):
             raise AssertionError("result must be of type unicode, type"
-                                 " of result is {0!r}"
-                                 "".format(result.__class__.__name__))
+                                 " of result is {name!r}"
+                                 "".format(name=result.__class__.__name__))
 
         if buf is None:
             return result
@@ -1523,8 +1525,8 @@ class Series(base.IndexOpsMixin, strings.StringAccessorMixin,
             lvals = self.values
             rvals = np.asarray(other)
             if lvals.shape[0] != rvals.shape[0]:
-                raise Exception('Dot product shape mismatch, %s vs %s' %
-                                (lvals.shape, rvals.shape))
+                raise Exception('Dot product shape mismatch, {left} vs {right}'
+                                .format(left=lvals.shape, right=rvals.shape))
 
         if isinstance(other, DataFrame):
             return self._constructor(np.dot(lvals, rvals),
@@ -1790,8 +1792,8 @@ class Series(base.IndexOpsMixin, strings.StringAccessorMixin,
 
         if is_list_like(ascending):
             if len(ascending) != 1:
-                raise ValueError('Length of ascending (%d) must be 1 '
-                                 'for Series' % (len(ascending)))
+                raise ValueError('Length of ascending ({length}) must be 1 '
+                                 'for Series'.format(length=len(ascending)))
             ascending = ascending[0]
 
         if not is_bool(ascending):
@@ -1809,7 +1811,8 @@ class Series(base.IndexOpsMixin, strings.StringAccessorMixin,
             sortedIdx[n:] = idx[good][argsorted]
             sortedIdx[:n] = idx[bad]
         else:
-            raise ValueError('invalid na_position: {!r}'.format(na_position))
+            raise ValueError('invalid na_position: {pos!r}'
+                             .format(pos=na_position))
 
         result = self._constructor(arr[sortedIdx], index=self.index[sortedIdx])
 
@@ -2456,8 +2459,8 @@ class Series(base.IndexOpsMixin, strings.StringAccessorMixin,
             # Validate that 'axis' is consistent with Series's single axis.
             self._get_axis_number(axis)
             if numeric_only:
-                raise NotImplementedError('Series.{0} does not implement '
-                                          'numeric_only.'.format(name))
+                raise NotImplementedError('Series.{name} does not implement '
+                                          'numeric_only.'.format(name=name))
             with np.errstate(all='ignore'):
                 return op(delegate, skipna=skipna, **kwds)
 
@@ -2813,7 +2816,8 @@ class Series(base.IndexOpsMixin, strings.StringAccessorMixin,
         kwargs.pop('how', None)
         if kwargs:
             raise TypeError('dropna() got an unexpected keyword '
-                            'argument "{0}"'.format(list(kwargs.keys())[0]))
+                            'argument "{arg}"'
+                            .format(arg=list(kwargs.keys())[0]))
 
         axis = self._get_axis_number(axis or 0)
 

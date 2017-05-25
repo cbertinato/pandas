@@ -43,7 +43,7 @@ class SparseList(PandasObject):
     def __getitem__(self, i):
         if i < 0:
             if i + len(self) < 0:  # pragma: no cover
-                raise ValueError('%d out of range' % i)
+                raise ValueError('{i} out of range'.format(i=i))
             i += len(self)
 
         passed = 0

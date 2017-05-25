@@ -69,7 +69,7 @@ cdef class IntIndex(SparseIndex):
 
     def __repr__(self):
         output = 'IntIndex\n'
-        output += 'Indices: %s\n' % repr(self.indices)
+        output += 'Indices: {ind!r}\n'.format(self.indices)
         return output
 
     def check_integrity(self):
@@ -358,8 +358,8 @@ cdef class BlockIndex(SparseIndex):
 
     def __repr__(self):
         output = 'BlockIndex\n'
-        output += 'Block locations: %s\n' % repr(self.blocs)
-        output += 'Block lengths: %s' % repr(self.blengths)
+        output += 'Block locations: {blocs!r}\n'.format(blocs=self.blocs)
+        output += 'Block lengths: {blen!r}'.format(blen=self.blengths)
 
         return output
 
@@ -391,14 +391,15 @@ cdef class BlockIndex(SparseIndex):
 
             if i < self.nblocks - 1:
                 if blocs[i] + blengths[i] > blocs[i + 1]:
-                    raise ValueError('Block %d overlaps' % i)
+                    raise ValueError('Block {i} overlaps'.format(i=i))
             else:
                 if blocs[i] + blengths[i] > self.length:
-                    raise ValueError('Block %d extends beyond end' % i)
+                    raise ValueError('Block {i} extends beyond end'
+                                     .format(i=i))
 
             # no zero-length blocks
             if blengths[i] == 0:
-                raise ValueError('Zero-length block %d' % i)
+                raise ValueError('Zero-length block {i}'.format(i=i))
 
     def equals(self, other):
         if not isinstance(other, BlockIndex):

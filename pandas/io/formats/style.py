@@ -230,7 +230,7 @@ class Styler(object):
             # ... except maybe the last for columns.names
             name = self.data.columns.names[r]
             cs = [BLANK_CLASS if name is None else INDEX_NAME_CLASS,
-                  "level%s" % r]
+                  "level{r}".format(r=r)]
             name = BLANK_VALUE if name is None else name
             row_es.append({"type": "th",
                            "value": name,
@@ -240,7 +240,8 @@ class Styler(object):
 
             if clabels:
                 for c, value in enumerate(clabels[r]):
-                    cs = [COL_HEADING_CLASS, "level%s" % r, "col%s" % c]
+                    cs = [COL_HEADING_CLASS, "level{r}".format(r=r),
+                          "col{c}".format(c=c)]
                     cs.extend(cell_context.get(
                         "col_headings", {}).get(r, {}).get(c, []))
                     es = {
@@ -264,7 +265,7 @@ class Styler(object):
 
             for c, name in enumerate(self.data.index.names):
                 cs = [INDEX_NAME_CLASS,
-                      "level%s" % c]
+                      "level{c}".format(c=c)]
                 name = '' if name is None else name
                 index_header_row.append({"type": "th", "value": name,
                                          "class": " ".join(cs)})
@@ -287,8 +288,14 @@ class Styler(object):
                     "is_visible": _is_visible(r, c, idx_lengths),
                     "value": value,
                     "display_value": value,
+<<<<<<< HEAD
                     "id": "_".join(rid[1:]),
                     "class": " ".join(rid)
+=======
+                    "class": " ".join([ROW_HEADING_CLASS,
+                                       "level{c}".format(c=c),
+                                       "row{r}".format(r=r)]),
+>>>>>>> Converted string formatting in io/formats/style.py
                 }
                 rowspan = idx_lengths.get((c, r), 0)
                 if rowspan > 1:
@@ -298,7 +305,7 @@ class Styler(object):
                 row_es.append(es)
 
             for c, col in enumerate(self.data.columns):
-                cs = [DATA_CLASS, "row%s" % r, "col%s" % c]
+                cs = [DATA_CLASS, "row{r}".format(r=r), "col{c}".format(c=c)]
                 cs.extend(cell_context.get("data", {}).get(r, {}).get(c, []))
                 formatter = self._display_funcs[(r, c)]
                 value = self.data.iloc[r, c]
@@ -317,7 +324,8 @@ class Styler(object):
                     else:
                         props.append(['', ''])
                 cellstyle.append({'props': props,
-                                  'selector': "row%s_col%s" % (r, c)})
+                                  'selector': "row{r}_col{c}"
+                                  .format(r=r, c=c)})
             body.append(row_es)
 
         return dict(head=head, cellstyle=cellstyle, body=body, uuid=uuid,
@@ -512,22 +520,23 @@ class Styler(object):
             result = func(data, **kwargs)
             if not isinstance(result, pd.DataFrame):
                 raise TypeError(
-                    "Function {!r} must return a DataFrame when "
-                    "passed to `Styler.apply` with axis=None".format(func))
+                    "Function {func!r} must return a DataFrame when "
+                    "passed to `Styler.apply` with axis=None"
+                    .format(func=func))
             if not (result.index.equals(data.index) and
                     result.columns.equals(data.columns)):
-                msg = ('Result of {!r} must have identical index and columns '
-                       'as the input'.format(func))
+                msg = ('Result of {func!r} must have identical index and '
+                       'columns as the input'.format(func=func))
                 raise ValueError(msg)
 
         result_shape = result.shape
         expected_shape = self.data.loc[subset].shape
         if result_shape != expected_shape:
-            msg = ("Function {!r} returned the wrong shape.\n"
-                   "Result has shape: {}\n"
-                   "Expected shape:   {}".format(func,
-                                                 result.shape,
-                                                 expected_shape))
+            msg = ("Function {func!r} returned the wrong shape.\n"
+                   "Result has shape: {got}\n"
+                   "Expected shape:   {expect}".format(func=func,
+                                                       got=result.shape,
+                                                       expect=expected_shape))
             raise ValueError(msg)
         self._update_ctx(result)
         return self
@@ -771,7 +780,12 @@ class Styler(object):
 
     @staticmethod
     def _highlight_null(v, null_color):
+<<<<<<< HEAD
         return 'background-color: %s' % null_color if pd.isna(v) else ''
+=======
+        return ('background-color: {color}'.format(color=null_color)
+                if pd.isnull(v) else '')
+>>>>>>> Converted string formatting in io/formats/style.py
 
     def highlight_null(self, null_color='red'):
         """
@@ -839,7 +853,8 @@ class Styler(object):
             # https://github.com/matplotlib/matplotlib/issues/5427
             normed = norm(s.values)
             c = [colors.rgb2hex(x) for x in plt.cm.get_cmap(cmap)(normed)]
-            return ['background-color: %s' % color for color in c]
+            return ['background-color: {color}'
+                    .format(color=color) for color in c]
 
     def set_properties(self, subset=None, **kwargs):
         """
@@ -1097,7 +1112,7 @@ class Styler(object):
     @staticmethod
     def _highlight_extrema(data, color='yellow', max_=True):
         """Highlight the min or max in a Series or DataFrame"""
-        attr = 'background-color: {0}'.format(color)
+        attr = 'background-color: {color}'.format(color=color)
         if data.ndim == 1:  # Series from .apply
             if max_:
                 extrema = data == data.max()
@@ -1182,6 +1197,6 @@ def _maybe_wrap_formatter(formatter):
     elif callable(formatter):
         return formatter
     else:
-        msg = "Expected a template string or callable, got {} instead".format(
-            formatter)
+        msg = ("Expected a template string or callable, got {fmtr} instead"
+               .format(fmtr=formatter))
         raise TypeError(msg)

@@ -666,10 +666,11 @@ cdef class TextReader:
 
                 elif len(zip_names) == 0:
                     raise ValueError('Zero files found in compressed '
-                                     'zip file %s', source)
+                                     'zip file {src}'.format(src=source))
                 else:
                     raise ValueError('Multiple files found in compressed '
-                                     'zip file %s', str(zip_names))
+                                     'zip file {names!s}'
+                                     .format(names=zip_names))
             elif self.compression == 'xz':
                 lzma = compat.import_lzma()
 
@@ -678,8 +679,9 @@ cdef class TextReader:
                 else:
                     source = lzma.LZMAFile(filename=source)
             else:
-                raise ValueError('Unrecognized compression type: %s' %
-                                 self.compression)
+                raise ValueError('Unrecognized compression '
+                                 'type: {compress_type}'
+                                 .format(compress_type=self.compression))
             self.handle = source
 
         if isinstance(source, basestring):
@@ -704,7 +706,7 @@ cdef class TextReader:
             if ptr == NULL:
                 if not os.path.exists(source):
                     raise compat.FileNotFoundError(
-                        'File %s does not exist' % source)
+                        'File {src} does not exist'.format(src=source))
                 raise IOError('Initializing from file failed')
 
             self.parser.source = ptr
@@ -722,7 +724,7 @@ cdef class TextReader:
             self.parser.cb_cleanup = &del_rd_source
         else:
             raise IOError('Expected file path name or file-like object,'
-                          ' got %s type' % type(source))
+                          ' got {src_typ} type'.format(src_typ=type(source)))
 
     cdef _get_header(self):
         # header is now a list of lists, so field_count should use header[0]
@@ -757,11 +759,13 @@ cdef class TextReader:
                           self.parser.lines < hr):
                     msg = self.orig_header
                     if isinstance(msg, list):
-                        msg = "[%s], len of %d," % (
-                            ','.join([ str(m) for m in msg ]), len(msg))
+                        msg = ("[{hdr}], len of {msg_len:d},"
+                               .format(hdr=','.join([ str(m) for m in msg ]),
+                                       msg_len=len(msg)))
                     raise ParserError(
-                        'Passed header=%s but only %d lines in file'
-                        % (msg, self.parser.lines))
+                        'Passed header={hdr:s} but only {count:d} '
+                        'lines in file'.format(hdr=msg,
+                                               count=self.parser.lines))
 
                 else:
                     field_count = self.parser.line_fields[hr]
@@ -782,9 +786,10 @@ cdef class TextReader:
 
                     if name == '':
                         if self.has_mi_columns:
-                            name = 'Unnamed: %d_level_%d' % (i, level)
+                            name = ('Unnamed: {i:d}_level_{lvl:d}'
+                                    .format(i=i, lvl=level))
                         else:
-                            name = 'Unnamed: %d' % i
+                            name = 'Unnamed: {i:d}'.format(i=i)
                         unnamed_count += 1
 
                     count = counts.get(name, 0)
@@ -792,7 +797,8 @@ cdef class TextReader:
                     if not self.has_mi_columns and self.mangle_dupe_cols:
                         while count > 0:
                             counts[name] = count + 1
-                            name = '%s.%d' % (name, count)
+                            name = '{name}.{count}'.format(name=name,
+                                                           count=count)
                             count = counts.get(name, 0)
 
                     this_header.append(name)
@@ -1013,7 +1019,12 @@ cdef class TextReader:
     cdef _end_clock(self, what):
         if self.verbose:
             elapsed = time.time() - self.clocks.pop(-1)
+<<<<<<< HEAD:pandas/_libs/parsers.pyx
             print('%s took: %.2f ms' % (what, elapsed * 1000))
+=======
+            print ('{what:s} took: {elapsed:.2f} ms'
+                   .format(what=what, elapsed=elapsed * 1000))
+>>>>>>> Converted string formatting in io/parsers.pyx:pandas/io/parsers.pyx
 
     def set_noconvert(self, i):
         self.noconvert.add(i)
@@ -1050,8 +1061,9 @@ cdef class TextReader:
 
         if self.table_width - self.leading_cols > num_cols:
             raise ParserError(
-                "Too many columns specified: expected %s and found %s" %
-                (self.table_width - self.leading_cols, num_cols))
+                "Too many columns specified: expected {expect} and found {got}"
+                .format(expect=self.table_width - self.leading_cols,
+                        got=num_cols))
 
         results = {}
         nused = 0
@@ -1107,8 +1119,9 @@ cdef class TextReader:
             if conv:
                 if col_dtype is not None:
                     warnings.warn(("Both a converter and dtype were specified "
-                                   "for column {0} - only the converter will "
-                                   "be used").format(name), ParserWarning,
+                                   "for column {name} - only the converter "
+                                   "will be used").format(name=name),
+                                  ParserWarning,
                                   stacklevel=5)
                 results[i] = _apply_converter(conv, self.parser, i, start, end,
                                               self.c_encoding)
@@ -1131,7 +1144,7 @@ cdef class TextReader:
                                              self.use_unsigned)
 
             if col_res is None:
-                raise ParserError('Unable to parse column %d' % i)
+                raise ParserError('Unable to parse column {i}'.format(i=i))
 
             results[i] = col_res
 
@@ -1250,8 +1263,8 @@ cdef class TextReader:
         elif dtype.kind == 'U':
             width = dtype.itemsize
             if width > 0:
-                raise TypeError("the dtype %s is not "
-                                "supported for parsing" % dtype)
+                raise TypeError("the dtype {dtype} is not "
+                                "supported for parsing".format(dtype=dtype))
 
             # unicode variable width
             return self._string_convert(i, start, end, na_filter,
@@ -1274,12 +1287,12 @@ cdef class TextReader:
             return self._string_convert(i, start, end, na_filter,
                                         na_hashset)
         elif is_datetime64_dtype(dtype):
-            raise TypeError("the dtype %s is not supported "
+            raise TypeError("the dtype {dtype} is not supported "
                             "for parsing, pass this column "
-                            "using parse_dates instead" % dtype)
+                            "using parse_dates instead".format(dtype=dtype))
         else:
-            raise TypeError("the dtype %s is not "
-                            "supported for parsing" % dtype)
+            raise TypeError("the dtype {dtype} is not "
+                            "supported for parsing".format(dtype=dtype))
 
     cdef _string_convert(self, Py_ssize_t i, int64_t start, int64_t end,
                          bint na_filter, kh_str_t *na_hashset):
@@ -1679,7 +1692,8 @@ cdef _to_fw_string(parser_t *parser, int64_t col, int64_t line_start,
         char *data
         ndarray result
 
-    result = np.empty(line_end - line_start, dtype='|S%d' % width)
+    result = np.empty(line_end - line_start,
+                      dtype='|S{width}'.format(width=width))
     data = <char*> result.data
 
     with nogil:
@@ -2189,7 +2203,7 @@ cdef raise_parser_error(object base, parser_t *parser):
                 Py_XDECREF(type)
                 raise old_exc
 
-    message = '%s. C error: ' % base
+    message = '{base}. C error: '.format(base=base)
     if parser.error_msg != NULL:
         if PY3:
             message += parser.error_msg.decode('utf-8')
@@ -2228,9 +2242,9 @@ def _concatenate_chunks(list chunks):
     if warning_columns:
         warning_names = ','.join(warning_columns)
         warning_message = " ".join([
-            "Columns (%s) have mixed types." % warning_names,
-            "Specify dtype option on import or set low_memory=False."
-          ])
+            "Columns ({col_names}) have mixed types."
+            .format(col_names=warning_names),
+            "Specify dtype option on import or set low_memory=False."])
         warnings.warn(warning_message, DtypeWarning, stacklevel=8)
     return result
 
@@ -2316,7 +2330,7 @@ def _to_structured_array(dict columns, object names, object usecols):
         char *buf
 
     if names is None:
-        names = ['%d' % i for i in range(len(columns))]
+        names = ['{i}'.format(i=i) for i in range(len(columns))]
     else:
         # single line header
         names = names[0]

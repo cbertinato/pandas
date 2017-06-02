@@ -763,7 +763,7 @@ cdef class TextReader:
                                .format(hdr=','.join([ str(m) for m in msg ]),
                                        msg_len=len(msg)))
                     raise ParserError(
-                        'Passed header={hdr:s} but only {count:d} '
+                        'Passed header={hdr} but only {count:d} '
                         'lines in file'.format(hdr=msg,
                                                count=self.parser.lines))
 

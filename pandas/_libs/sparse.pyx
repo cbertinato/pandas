@@ -69,7 +69,7 @@ cdef class IntIndex(SparseIndex):
 
     def __repr__(self):
         output = 'IntIndex\n'
-        output += 'Indices: {ind!r}\n'.format(self.indices)
+        output += 'Indices: {indices!r}\n'.format(indices=self.indices)
         return output
 
     def check_integrity(self):

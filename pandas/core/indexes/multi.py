@@ -149,11 +149,11 @@ class MultiIndex(Index):
                 raise ValueError("Unequal label lengths: {lengths}"
                                  .format(lengths=[len(lab) for lab in labels]))
             if len(label) and label.max() >= len(level):
-                raise ValueError("On level {lvl}, label max ({max}) >= "
-                                 "length of level  ({len}). NOTE: this "
+                raise ValueError("On level {level}, label max ({max}) >= "
+                                 "length of level  ({length:d}). NOTE: this "
                                  "index is in an inconsistent state"
-                                 .format(lvl=i, max=label.max(),
-                                         len=len(level)))
+                                 .format(level=i, max=label.max(),
+                                         length=len(level)))
 
     def _get_levels(self):
         return self._levels

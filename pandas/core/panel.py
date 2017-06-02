@@ -1123,7 +1123,7 @@ class Panel(NDFrame):
                 filter_type=None, **kwds):
         if numeric_only:
             raise NotImplementedError('Panel.{name} does not implement '
-                                      'numeric_only.'.forma(name=name))
+                                      'numeric_only.'.format(name=name))
 
         axis_name = self._get_axis_name(axis)
         axis_number = self._get_axis_number(axis_name)
@@ -1556,7 +1556,7 @@ Returns
                     See also
                     --------
                     """ + cls.__name__ + ".{rev}\n")
-                
+
                 doc = _op_doc.format(desc=op_desc['desc'], name=op_name,
                                      equiv=equiv, rev=op_desc['reverse'])
             else:

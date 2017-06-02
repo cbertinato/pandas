@@ -121,7 +121,7 @@ mangle_dupe_cols : boolean, default True
     'X'...'X'. Passing in False will cause data to be overwritten if there
     are duplicate names in the columns.
 dtype : Type name or dict of column -> type, default None
-    Data type for data or columns. E.g. {'a': np.float64, 'b': np.int32}
+    Data type for data or columns. E.g. {{'a': np.float64, 'b': np.int32}}
     Use `str` or `object` to preserve and not interpret dtype.
     If converters are specified, they will be applied INSTEAD
     of dtype conversion.
@@ -173,7 +173,7 @@ default False
       each as a separate date column.
     * list of lists. e.g.  If [[1, 3]] -> combine columns 1 and 3 and parse as
       a single date column.
-    * dict, e.g. {'foo' : [1, 3]} -> parse columns 1, 3 as date and call result
+    * dict, e.g. {{'foo' : [1, 3]}} -> parse columns 1, 3 as date and call result
       'foo'
 
     If a column or index contains an unparseable date, the entire column or
@@ -209,7 +209,7 @@ chunksize : int, default None
     See the `IO Tools docs
     <http://pandas.pydata.org/pandas-docs/stable/io.html#io-chunking>`_
     for more information on ``iterator`` and ``chunksize``.
-compression : {'infer', 'gzip', 'bz2', 'zip', 'xz', None}, default 'infer'
+compression : {{'infer', 'gzip', 'bz2', 'zip', 'xz', None}}, default 'infer'
     For on-the-fly decompression of on-disk data. If 'infer', then use gzip,
     bz2, zip or xz if filepath_or_buffer is a string ending in '.gz', '.bz2',
     '.zip', or 'xz', respectively, and no decompression otherwise. If using
@@ -306,7 +306,7 @@ result : DataFrame or TextParser
 """
 
 # engine is not used in read_fwf() so is factored out of the shared docstring
-_engine_doc = """engine : {'c', 'python'}, optional
+_engine_doc = """engine : {{{'c', 'python'}}}, optional
     Parser engine to use. The C engine is faster while the python engine is
     currently more feature-complete."""
 

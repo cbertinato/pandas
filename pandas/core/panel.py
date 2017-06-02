@@ -1532,25 +1532,31 @@ Returns
                     equiv = 'panel ' + op_desc['op'] + ' other'
 
                 _op_doc = (
-                    "{{desc}} of series and other, element-wise "
-                    "(binary operator `{{name}}`)." + """
+                    """
+                    {{desc}} of series and other, element-wise
+                    (binary operator `{{name}}`).
+
                     Equivalent to ``{{equiv}}``.
 
                     Parameters
                     ----------
                     other : {name1} or {name2}""".format(
                         name1=cls._constructor_sliced.__name__,
-                        name2=cls.__name__) + """
-                    axis : {""" + ', '.join(cls._AXIS_ORDERS) + "}" + """
+                        name2=cls.__name__) +
+                    """
+                    axis : {{""" + ', '.join(cls._AXIS_ORDERS) + "}}" +
+                    """
                         Axis to broadcast over
 
                     Returns
                     -------
-                    """ + cls.__name__ + """
+                    """ + cls.__name__ +
+                    """
 
                     See also
                     --------
-                    """ + cls.__name__ + ".{{rev}}\n")
+                    """ + cls.__name__ + ".{rev}\n")
+                
                 doc = _op_doc.format(desc=op_desc['desc'], name=op_name,
                                      equiv=equiv, rev=op_desc['reverse'])
             else:

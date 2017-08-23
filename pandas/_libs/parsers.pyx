@@ -1029,12 +1029,8 @@ cdef class TextReader:
     cdef _end_clock(self, what):
         if self.verbose:
             elapsed = time.time() - self.clocks.pop(-1)
-<<<<<<< HEAD:pandas/_libs/parsers.pyx
-            print('%s took: %.2f ms' % (what, elapsed * 1000))
-=======
             print ('{what:s} took: {elapsed:.2f} ms'
                    .format(what=what, elapsed=elapsed * 1000))
->>>>>>> Converted string formatting in io/parsers.pyx:pandas/io/parsers.pyx
 
     def set_noconvert(self, i):
         self.noconvert.add(i)

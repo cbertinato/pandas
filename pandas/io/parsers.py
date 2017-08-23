@@ -354,19 +354,9 @@ delimiter : str, default ``'\t' + ' '``
 
 _read_fwf_doc = """
 Read a table of fixed-width formatted lines into DataFrame
-
-<<<<<<< HEAD
 %s
-""" % (_parser_params % (_fwf_widths, ''))
-=======
-{parser_params}
-
-Also, 'delimiter' is used to specify the filler character of the
-fields if it is not spaces (e.g., '~').
 """.format(parser_params=_parser_params.format(sep_doc=_fwf_widths,
                                                engine_doc=''))
->>>>>>> Converted string formatting in io/parsers.py
-
 
 def _validate_integer(name, val, min_val=0):
     """
@@ -1339,16 +1329,11 @@ class ParserBase(object):
             for i, col in enumerate(names):
                 cur_count = counts[col]
 
-<<<<<<< HEAD
                 while cur_count > 0:
                     counts[col] = cur_count + 1
-=======
-                if cur_count > 0:
-                    names[i] = ('{col:s}.{count:d}'
-                                .format(col=col, count=cur_count))
->>>>>>> Converted string formatting in io/parsers.py
 
-                    col = '%s.%d' % (col, cur_count)
+                    col = ('{col:s}.{count:d}'
+                                .format(col=col, count=cur_count))
                     cur_count = counts[col]
 
                 names[i] = col
@@ -2365,22 +2350,16 @@ class PythonParser(ParserBase):
                     counts = defaultdict(int)
 
                     for i, col in enumerate(this_columns):
-<<<<<<< HEAD
+
                         cur_count = counts[col]
 
                         while cur_count > 0:
                             counts[col] = cur_count + 1
-                            col = "%s.%d" % (col, cur_count)
+                            col = ('{col:s}.{count:d}'.format(col=col,
+                                                              count=cur_count))
                             cur_count = counts[col]
 
                         this_columns[i] = col
-=======
-                        cur_count = counts.get(col, 0)
-                        if cur_count > 0:
-                            this_columns[i] = ('{col:s}.{count:d}'
-                                               .format(col=col,
-                                                       count=cur_count))
->>>>>>> Converted string formatting in io/parsers.py
                         counts[col] = cur_count + 1
                 elif have_mi_columns:
 

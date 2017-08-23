@@ -62,9 +62,7 @@ object with a read() method (such as a file handle or StringIO)
     The string could be a URL. Valid URL schemes include http, ftp, s3, and
     file. For file URLs, a host is expected. For instance, a local file could
     be file ://localhost/path/to/table.csv
-
-{sep_doc}
-
+%s
 delim_whitespace : boolean, default False
     Specifies whether or not whitespace (e.g. ``' '`` or ``'\t'``) will be
     used as the sep. Equivalent to setting ``sep='\s+'``. If this option
@@ -125,7 +123,7 @@ dtype : Type name or dict of column -> type, default None
     Use `str` or `object` to preserve and not interpret dtype.
     If converters are specified, they will be applied INSTEAD
     of dtype conversion.
-{engine_doc}
+%s
 converters : dict, default None
     Dict of functions for converting values in certain columns. Keys can either
     be integers or column labels
@@ -314,27 +312,24 @@ _sep_doc = r"""sep : str, default {default}
     Delimiter to use. If sep is None, the C engine cannot automatically detect
     the separator, but the Python parsing engine can, meaning the latter will
     be used automatically. In addition, separators longer than 1 character and
-    different from ``'\\s+'`` will be interpreted as regular expressions and
+    different from ``'\s+'`` will be interpreted as regular expressions and
     will also force the use of the Python parsing engine. Note that regex
-    delimiters are prone to ignoring quoted data. Regex example: ``'\\r\\t'``
+    delimiters are prone to ignoring quoted data. Regex example: ``'\r\t'``
 delimiter : str, default ``None``
     Alternative argument name for sep."""
 
 _read_csv_doc = """
 Read CSV (comma-separated) file into DataFrame
 
-{parser_params}
-""".format(parser_params=_parser_params.format(sep_doc=_sep_doc
-                                               .format(default="','"),
-                                               engine_doc=_engine_doc))
+%s
+""" % (_parser_params % (_sep_doc.format(default="','"), _engine_doc))
 
 _read_table_doc = """
 Read general delimited file into DataFrame
 
-{parser_params}
-""".format(parser_params=_parser_params
-           .format(sep_doc=_sep_doc.format(default="\\t (tab-stop)"),
-                   engine_doc=_engine_doc))
+%s
+""" % (_parser_params % (_sep_doc.format(default="\\t (tab-stop)"),
+                         _engine_doc))
 
 _fwf_widths = """\
 colspecs : list of pairs (int, int) or 'infer'. optional
@@ -354,9 +349,9 @@ delimiter : str, default ``'\t' + ' '``
 
 _read_fwf_doc = """
 Read a table of fixed-width formatted lines into DataFrame
+
 %s
-""".format(parser_params=_parser_params.format(sep_doc=_fwf_widths,
-                                               engine_doc=''))
+""" % (_parser_params % (_fwf_widths, ''))
 
 def _validate_integer(name, val, min_val=0):
     """

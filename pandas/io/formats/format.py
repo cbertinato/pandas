@@ -48,6 +48,7 @@ import numpy as np
 import itertools
 import csv
 from functools import partial
+from collections import namedtuple
 
 common_docstring = """
     Parameters
@@ -1060,6 +1061,7 @@ class LatexFormatter(TableFormatter):
 class HTMLFormatter(TableFormatter):
 
     indent_delta = 2
+    Element = namedtuple('Element', ['name', 'prop', 'val'])
 
     def __init__(self, formatter, classes=None, max_rows=None, max_cols=None,
                  notebook=False, border=None):
@@ -1144,30 +1146,33 @@ class HTMLFormatter(TableFormatter):
         template_last = """\
             </style>"""
         template_select = """\
-                .dataframe %s {
-                    %s: %s;
-                }"""
-        element_props = [('tbody tr th:only-of-type',
+                .dataframe {name} {{
+                    {prop}: {val};
+                }}"""
+        element_props = [Element('tbody tr th:only-of-type',
                           'vertical-align',
                           'middle'),
-                         ('tbody tr th',
+                         Element('tbody tr th',
                           'vertical-align',
                           'top')]
         if isinstance(self.columns, MultiIndex):
-            element_props.append(('thead tr th',
+            element_props.append(Element('thead tr th',
                                   'text-align',
                                   'left'))
             if all((self.fmt.has_index_names,
                     self.fmt.index,
                     self.fmt.show_index_names)):
-                element_props.append(('thead tr:last-of-type th',
+                element_props.append(Element('thead tr:last-of-type th',
                                       'text-align',
                                       'right'))
         else:
-            element_props.append(('thead th',
+            element_props.append(Element('thead th',
                                   'text-align',
                                   'right'))
-        template_mid = '\n\n'.join(map(lambda t: template_select % t,
+        template_mid = '\n\n'.join(map(lambda t: template_select
+                                       .format(name=t.name,
+                                               prop=t.prop,
+                                               val=t.val),
                                        element_props))
         template = dedent('\n'.join((template_first,
                                      template_mid,

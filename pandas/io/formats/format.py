@@ -1057,11 +1057,11 @@ class LatexFormatter(TableFormatter):
         # remove entries that have been written to buffer
         self.clinebuf = [x for x in self.clinebuf if x[0] != i]
 
+Element = namedtuple('Element', ['name', 'prop', 'val'])
 
 class HTMLFormatter(TableFormatter):
 
     indent_delta = 2
-    Element = namedtuple('Element', ['name', 'prop', 'val'])
 
     def __init__(self, formatter, classes=None, max_rows=None, max_cols=None,
                  notebook=False, border=None):

@@ -1542,7 +1542,7 @@ class IndexCol(StringMixin):
 
     def __unicode__(self):
         temp = UnicodeIndexCol(
-            map(pprint_thing,
+            *map(pprint_thing,
                 (self.name,
                  self.cname,
                  self.axis,
@@ -1838,7 +1838,7 @@ class DataCol(IndexCol):
 
     def __unicode__(self):
         temp = UnicodeDataCol(
-            map(pprint_thing,
+            *map(pprint_thing,
                 (self.name,
                  self.cname,
                  self.dtype,

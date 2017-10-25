@@ -1057,7 +1057,9 @@ class LatexFormatter(TableFormatter):
         # remove entries that have been written to buffer
         self.clinebuf = [x for x in self.clinebuf if x[0] != i]
 
+
 Element = namedtuple('Element', ['name', 'prop', 'val'])
+
 
 class HTMLFormatter(TableFormatter):
 
@@ -1146,29 +1148,29 @@ class HTMLFormatter(TableFormatter):
         template_last = """\
             </style>"""
         template_select = """\
-                .dataframe {name} {{
-                    {prop}: {val};
-                }}"""
+            .dataframe {name} {{
+                {prop}: {val};
+            }}"""
         element_props = [Element('tbody tr th:only-of-type',
-                          'vertical-align',
-                          'middle'),
+                                 'vertical-align',
+                                 'middle'),
                          Element('tbody tr th',
-                          'vertical-align',
-                          'top')]
+                                 'vertical-align',
+                                 'top')]
         if isinstance(self.columns, MultiIndex):
             element_props.append(Element('thead tr th',
-                                  'text-align',
-                                  'left'))
+                                         'text-align',
+                                         'left'))
             if all((self.fmt.has_index_names,
                     self.fmt.index,
                     self.fmt.show_index_names)):
                 element_props.append(Element('thead tr:last-of-type th',
-                                      'text-align',
-                                      'right'))
+                                             'text-align',
+                                             'right'))
         else:
             element_props.append(Element('thead th',
-                                  'text-align',
-                                  'right'))
+                                         'text-align',
+                                         'right'))
         template_mid = '\n\n'.join(map(lambda t: template_select
                                        .format(name=t.name,
                                                prop=t.prop,

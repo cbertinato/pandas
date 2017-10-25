@@ -1543,11 +1543,11 @@ class IndexCol(StringMixin):
     def __unicode__(self):
         temp = UnicodeIndexCol(
             *map(pprint_thing,
-                (self.name,
-                 self.cname,
-                 self.axis,
-                 self.pos,
-                 self.kind)))
+                 (self.name,
+                  self.cname,
+                  self.axis,
+                  self.pos,
+                  self.kind)))
 
         return ("name->{name},cname->{cname},axis->{axis},pos->{pos},"
                 "kind->{kind}".format(name=temp.name, cname=temp.cname,
@@ -1839,11 +1839,11 @@ class DataCol(IndexCol):
     def __unicode__(self):
         temp = UnicodeDataCol(
             *map(pprint_thing,
-                (self.name,
-                 self.cname,
-                 self.dtype,
-                 self.kind,
-                 self.shape)))
+                 (self.name,
+                  self.cname,
+                  self.dtype,
+                  self.kind,
+                  self.shape)))
         return ("name->{name},cname->{cname},dtype->{dtype},kind->{kind},"
                 "shape->{shape}".format(name=temp.name, cname=temp.cname,
                                         dtype=temp.dtype, kind=temp.kind,
@@ -2289,8 +2289,7 @@ class Fixed(StringMixin):
         if s is not None:
             if isinstance(s, (list, tuple)):
                 s = "[{s}]".format(s=','.join([pprint_thing(x) for x in s]))
-            return "{typ:12.12} (shape->{s})".format(typ=self.pandas_type,
-                                                      s=s)
+            return "{typ:12.12} (shape->{s})".format(typ=self.pandas_type, s=s)
         return self.pandas_type
 
     def set_object_info(self):

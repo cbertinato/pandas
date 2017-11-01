@@ -705,9 +705,9 @@ class Index(IndexOpsMixin, PandasObject):
 
     @classmethod
     def _scalar_data_error(cls, data):
-        raise TypeError('{0}(...) must be called with a collection of some '
-                        'kind, {1} was passed'.format(cls.__name__,
-                                                      repr(data)))
+        raise TypeError('{name}(...) must be called with a collection of some '
+                        'kind, {data!r} was passed'.format(name=cls.__name__,
+                                                           data=data))
 
     @classmethod
     def _string_data_error(cls, data):
@@ -837,14 +837,15 @@ class Index(IndexOpsMixin, PandasObject):
         attrs = self._format_attrs()
         space = self._format_space()
 
-        prepr = (u(",%s") %
-                 space).join([u("%s=%s") % (k, v) for k, v in attrs])
+        prepr = ((u(",{space}").format(space=space))
+                 .join([u("{k}={v}").format(k=k, v=v) for k, v in attrs]))
 
         # no data provided, just attributes
         if data is None:
             data = ''
 
-        res = u("%s(%s%s)") % (klass, data, prepr)
+        res = u("{klass}({data}{prepr})").format(klass=klass,
+                                                 data=data, prepr=prepr)
 
         return res
 
@@ -877,8 +878,8 @@ class Index(IndexOpsMixin, PandasObject):
         if name is None:
             name = self.__class__.__name__
 
-        space1 = "\n%s" % (' ' * (len(name) + 1))
-        space2 = "\n%s" % (' ' * (len(name) + 2))
+        space1 = "\n{spaces}".format(spaces=' ' * (len(name) + 1))
+        space2 = "\n{spaces}".format(spaces=' ' * (len(name) + 2))
 
         n = len(self)
         sep = ','
@@ -915,11 +916,11 @@ class Index(IndexOpsMixin, PandasObject):
             summary = '[], '
         elif n == 1:
             first = formatter(self[0])
-            summary = '[%s], ' % first
+            summary = '[{first}], '.format(first=first)
         elif n == 2:
             first = formatter(self[0])
             last = formatter(self[-1])
-            summary = '[%s, %s], ' % (first, last)
+            summary = '[{first}, {last}], '.format(first=first, last=last)
         else:
 
             if n > max_seq_items:
@@ -981,7 +982,7 @@ class Index(IndexOpsMixin, PandasObject):
         Return a list of tuples of the (attr,formatted_value)
         """
         attrs = []
-        attrs.append(('dtype', "'%s'" % self.dtype))
+        attrs.append(('dtype', "'{dtyp}'".format(dtyp=self.dtype)))
         if self.name is not None:
             attrs.append(('name', default_pprint(self.name)))
         max_seq_items = get_option('display.max_seq_items') or len(self)
@@ -1102,8 +1103,8 @@ class Index(IndexOpsMixin, PandasObject):
     def _assert_can_do_op(self, value):
         """ Check value is valid for scalar op """
         if not lib.isscalar(value):
-            msg = "'value' must be a scalar, passed: {0}"
-            raise TypeError(msg.format(type(value).__name__))
+            msg = "'value' must be a scalar, passed: {pasd}"
+            raise TypeError(msg.format(pasd=type(value).__name__))
 
     @property
     def nlevels(self):
@@ -1114,8 +1115,8 @@ class Index(IndexOpsMixin, PandasObject):
 
     def _set_names(self, values, level=None):
         if len(values) != 1:
-            raise ValueError('Length of new names must be 1, got %d' %
-                             len(values))
+            raise ValueError('Length of new names must be 1, got {numval}'
+                             .format(numval=len(values)))
         self.name = values[0]
 
     names = property(fset=_set_names, fget=_get_names)
@@ -1221,14 +1222,17 @@ class Index(IndexOpsMixin, PandasObject):
             if (hasattr(tail, 'format') and
                     not isinstance(tail, compat.string_types)):
                 tail = tail.format()
-            index_summary = ', %s to %s' % (pprint_thing(head),
-                                            pprint_thing(tail))
+            index_summary = ((', {head} to {tail}')
+                             .format(head=pprint_thing(head),
+                                     tail=pprint_thing(tail)))
         else:
             index_summary = ''
 
         if name is None:
             name = type(self).__name__
-        return '%s: %s entries%s' % (name, len(self), index_summary)
+        return '{name}: {len} entries{summary}'.format(name=name,
+                                                       len=len(self),
+                                                       summary=index_summary)
 
     def _mpl_repr(self):
         # how to represent ourselves to matplotlib
@@ -1607,14 +1611,15 @@ class Index(IndexOpsMixin, PandasObject):
         if isinstance(level, int):
             if level < 0 and level != -1:
                 raise IndexError("Too many levels: Index has only 1 level,"
-                                 " %d is not a valid level number" % (level, ))
+                                 " {lvls} is not a valid level number"
+                                 .format(lvls=level))
             elif level > 0:
                 raise IndexError("Too many levels:"
-                                 " Index has only 1 level, not %d" %
-                                 (level + 1))
+                                 " Index has only 1 level, not {lvls}"
+                                 .format(lvls=level + 1))
         elif level != self.name:
-            raise KeyError('Level %s must be same as name (%s)' %
-                           (level, self.name))
+            raise KeyError('Level {lvl} must be same as name ({name})'
+                           .format(lvl=level, name=self.name))
 
     def _get_level_number(self, level):
         self._validate_index_level(level)
@@ -1671,9 +1676,9 @@ class Index(IndexOpsMixin, PandasObject):
     _unpickle_compat = __setstate__
 
     def __nonzero__(self):
-        raise ValueError("The truth value of a {0} is ambiguous. "
+        raise ValueError("The truth value of a {name} is ambiguous. "
                          "Use a.empty, a.bool(), a.item(), a.any() or a.all()."
-                         .format(self.__class__.__name__))
+                         .format(name=self.__class__.__name__))
 
     __bool__ = __nonzero__
 
@@ -1718,7 +1723,8 @@ class Index(IndexOpsMixin, PandasObject):
             return False
 
     def __hash__(self):
-        raise TypeError("unhashable type: %r" % type(self).__name__)
+        raise TypeError("unhashable type: {name!r}"
+                        .format(name=type(self).__name__))
 
     def __setitem__(self, key, value):
         raise TypeError("Index does not support mutable operations")
@@ -2126,8 +2132,8 @@ class Index(IndexOpsMixin, PandasObject):
         -------
         shifted : Index
         """
-        raise NotImplementedError("Not supported for type %s" %
-                                  type(self).__name__)
+        raise NotImplementedError("Not supported for type {typ}"
+                                  .format(typ=type(self).__name__))
 
     def argsort(self, *args, **kwargs):
         """
@@ -2244,9 +2250,9 @@ class Index(IndexOpsMixin, PandasObject):
                 try:
                     self._values[0] < other_diff[0]
                 except TypeError as e:
-                    warnings.warn("%s, sort order is undefined for "
-                                  "incomparable objects" % e, RuntimeWarning,
-                                  stacklevel=3)
+                    warnings.warn("{err}, sort order is undefined for "
+                                  "incomparable objects".format(err=e),
+                                  RuntimeWarning, stacklevel=3)
                 else:
                     types = frozenset((self.inferred_type,
                                        other.inferred_type))
@@ -2259,9 +2265,9 @@ class Index(IndexOpsMixin, PandasObject):
                 try:
                     result = np.sort(result)
                 except TypeError as e:
-                    warnings.warn("%s, sort order is undefined for "
-                                  "incomparable objects" % e, RuntimeWarning,
-                                  stacklevel=3)
+                    warnings.warn("{err}, sort order is undefined for "
+                                  "incomparable objects".format(err=e),
+                                  RuntimeWarning, stacklevel=3)
 
         # for subclasses
         return self._wrap_union_result(other, result)
@@ -2725,8 +2731,9 @@ class Index(IndexOpsMixin, PandasObject):
         indexes and non-monotonic targets
         """
         if limit is not None:
-            raise ValueError('limit argument for %r method only well-defined '
-                             'if index and target are monotonic' % method)
+            raise ValueError('limit argument for {method!r} method only '
+                             'well-defined if index and target are monotonic'
+                             .format(method=method))
 
         side = 'left' if method == 'pad' else 'right'
 
@@ -3586,8 +3593,8 @@ class Index(IndexOpsMixin, PandasObject):
 
         if side not in ('left', 'right'):
             raise ValueError("Invalid value for side kwarg,"
-                             " must be either 'left' or 'right': %s" %
-                             (side, ))
+                             " must be either 'left' or 'right': {side}"
+                             .format(side=side))
 
         original_label = label
 
@@ -3613,8 +3620,9 @@ class Index(IndexOpsMixin, PandasObject):
             else:
                 slc = lib.maybe_indices_to_slice(slc.astype('i8'), len(self))
             if isinstance(slc, np.ndarray):
-                raise KeyError("Cannot get %s slice bound for non-unique "
-                               "label: %r" % (side, original_label))
+                raise KeyError("Cannot get {side} slice bound for non-unique "
+                               "label: {label!r}".format(side=side,
+                                                         label=original_label))
 
         if isinstance(slc, slice):
             if side == 'left':
@@ -4253,4 +4261,5 @@ def _trim_front(strings):
 
 def _validate_join_method(method):
     if method not in ['left', 'right', 'inner', 'outer']:
-        raise ValueError('do not recognize join method %s' % method)
+        raise ValueError('do not recognize join method {method}'
+                         .format(method=method))

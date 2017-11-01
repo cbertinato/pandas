@@ -315,9 +315,10 @@ class DateOffset(object):
 
         n_str = ""
         if self.n != 1:
-            n_str = "%s * " % self.n
+            n_str = "{n} * ".format(n=self.n)
 
-        out = '<%s' % n_str + className + plural + self._repr_attrs() + '>'
+        out = '<{out}'.format(out=n_str + className + plural +
+                              self._repr_attrs() + '>')
         return out
 
     # TODO: Combine this with BusinessMixin version by defining a whitelisted
@@ -335,10 +336,10 @@ class DateOffset(object):
                     if not hasattr(self, key):
                         kwds_new[key] = self.kwds[key]
                 if len(kwds_new) > 0:
-                    attrs.append('kwds=%s' % (kwds_new))
+                    attrs.append('kwds={kwds!s}'.format(kwds=kwds_new))
             elif attr not in exclude:
                 value = getattr(self, attr)
-                attrs.append('%s=%s' % (attr, value))
+                attrs.append('{attr}={value}'.format(attr=attr, value=value))
 
         out = ''
         if attrs:

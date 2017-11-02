@@ -66,16 +66,16 @@ class FrozenList(PandasObject, list):
 
     def _disabled(self, *args, **kwargs):
         """This method will not function because object is immutable."""
-        raise TypeError("'%s' does not support mutable operations." %
-                        self.__class__.__name__)
+        raise TypeError("'{cls}' does not support mutable operations."
+                        .format(cls=self.__class__.__name__))
 
     def __unicode__(self):
         return pprint_thing(self, quote_strings=True,
                             escape_chars=('\t', '\r', '\n'))
 
     def __repr__(self):
-        return "%s(%s)" % (self.__class__.__name__,
-                           str(self))
+        return "{cls}({str})".format(cls=self.__class__.__name__,
+                                     str=str(self))
 
     __setitem__ = __setslice__ = __delitem__ = __delslice__ = _disabled
     pop = append = extend = remove = sort = insert = _disabled
@@ -92,8 +92,8 @@ class FrozenNDArray(PandasObject, np.ndarray):
 
     def _disabled(self, *args, **kwargs):
         """This method will not function because object is immutable."""
-        raise TypeError("'%s' does not support mutable operations." %
-                        self.__class__)
+        raise TypeError("'{cls}' does not support mutable operations."
+                        .format(cls=self.__class__))
 
     __setitem__ = __setslice__ = __delitem__ = __delslice__ = _disabled
     put = itemset = fill = _disabled
@@ -115,7 +115,8 @@ class FrozenNDArray(PandasObject, np.ndarray):
         """
         prepr = pprint_thing(self, escape_chars=('\t', '\r', '\n'),
                              quote_strings=True)
-        return "%s(%s, dtype='%s')" % (type(self).__name__, prepr, self.dtype)
+        return ("{name}({prepr}, dtype='{typ}')"
+                .format(name=type(self).__name__, prepr=prepr, typ=self.dtype))
 
     def searchsorted(self, v, side='left', sorter=None):
         """

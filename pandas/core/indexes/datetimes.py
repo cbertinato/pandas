@@ -144,7 +144,8 @@ def _dt_index_cmp(opname, nat_result=False):
 def _ensure_datetime64(other):
     if isinstance(other, np.datetime64):
         return other
-    raise TypeError('%s type object %s' % (type(other), str(other)))
+    raise TypeError('{typ} type object {str}'
+                    .format(typ=type(other), str=str(other)))
 
 
 _midnight = time(0, 0)
@@ -328,8 +329,8 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
         if not isinstance(data, (np.ndarray, Index, ABCSeries)):
             if is_scalar(data):
                 raise ValueError('DatetimeIndex() must be called with a '
-                                 'collection of some kind, %s was passed'
-                                 % repr(data))
+                                 'collection of some kind, {data!r} was passed'
+                                 .format(data=data))
             # other iterable of some kind
             if not isinstance(data, (list, tuple)):
                 data = list(data)
@@ -353,9 +354,9 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
                 else:
                     # the tz's must match
                     if str(tz) != str(data.tz):
-                        msg = ('data is already tz-aware {0}, unable to '
-                               'set specified tz: {1}')
-                        raise TypeError(msg.format(data.tz, tz))
+                        msg = ('data is already tz-aware {data}, unable to '
+                               'set specified tz: {tz}')
+                        raise TypeError(msg.format(data=data.tz, tz=tz))
 
                 subarr = data.values
 
@@ -404,10 +405,11 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
                     on_freq = cls._generate(subarr[0], None, len(subarr), None,
                                             freq, tz=tz, ambiguous=ambiguous)
                     if not np.array_equal(subarr.asi8, on_freq.asi8):
-                        raise ValueError('Inferred frequency {0} from passed '
-                                         'dates does not conform to passed '
-                                         'frequency {1}'
-                                         .format(inferred, freq.freqstr))
+                        raise ValueError('Inferred frequency {infer} from '
+                                         'passed dates does not conform to '
+                                         'passed frequency {freq}'
+                                         .format(infer=inferred,
+                                                 freq=freq.freqstr))
 
         if freq_infer:
             inferred = subarr.inferred_freq
@@ -754,9 +756,9 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
         # adding a timedeltaindex to a datetimelike
         if other is libts.NaT:
             return self._nat_new(box=True)
-        raise TypeError("cannot add {0} and {1}"
-                        .format(type(self).__name__,
-                                type(other).__name__))
+        raise TypeError("cannot add {typ1} and {typ2}"
+                        .format(typ1=type(self).__name__,
+                                typ2=type(other).__name__))
 
     def _sub_datelike(self, other):
         # subtract a datetime from myself, yielding a TimedeltaIndex
@@ -874,7 +876,8 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
             return Index(self.format(), name=self.name, dtype=object)
         elif is_period_dtype(dtype):
             return self.to_period(freq=dtype.freq)
-        raise ValueError('Cannot cast DatetimeIndex to dtype %s' % dtype)
+        raise ValueError('Cannot cast DatetimeIndex to dtype {typ}'
+                         .format(typ=dtype))
 
     def _get_time_micros(self):
         utc = _utc()

@@ -92,8 +92,8 @@ class TimelikeOps(object):
             result = (buff * (values // buff) + unit *
                       (rounder((values % buff) / float(unit))).astype('i8'))
         elif unit >= 1000 and unit % 1000 != 0:
-            msg = 'Precision will be lost using frequency: {}'
-            warnings.warn(msg.format(freq))
+            msg = 'Precision will be lost using frequency: {freq}'
+            warnings.warn(msg.format(freq=freq))
             result = (unit * rounder(values / float(unit)).astype('i8'))
         else:
             result = (unit * rounder(values / float(unit)).astype('i8'))
@@ -576,7 +576,7 @@ class DatetimeIndexOpsMixin(object):
             if attrib == 'freq':
                 freq = self.freqstr
                 if freq is not None:
-                    freq = "'%s'" % freq
+                    freq = "'{freq}'".format(freq=freq)
                 attrs.append(('freq', freq))
         return attrs
 
@@ -618,9 +618,9 @@ class DatetimeIndexOpsMixin(object):
                 ._convert_scalar_indexer(key, kind=kind))
 
     def _add_datelike(self, other):
-        raise TypeError("cannot add {0} and {1}"
-                        .format(type(self).__name__,
-                                type(other).__name__))
+        raise TypeError("cannot add {typ1} and {typ2}"
+                        .format(typ1=type(self).__name__,
+                                typ2=type(other).__name__))
 
     def _sub_datelike(self, other):
         raise AbstractMethodError(self)
@@ -814,17 +814,19 @@ class DatetimeIndexOpsMixin(object):
         """
         formatter = self._formatter_func
         if len(self) > 0:
-            index_summary = ', %s to %s' % (formatter(self[0]),
-                                            formatter(self[-1]))
+            index_summary = (', {start} to {end}'
+                             .format(start=formatter(self[0]),
+                                     end=formatter(self[-1])))
         else:
             index_summary = ''
 
         if name is None:
             name = type(self).__name__
-        result = '%s: %s entries%s' % (printing.pprint_thing(name),
-                                       len(self), index_summary)
+        result = ('{name}: {len} entries{idx}'
+                  .format(name=printing.pprint_thing(name), len=len(self),
+                          idx=index_summary))
         if self.freq:
-            result += '\nFreq: %s' % self.freqstr
+            result += '\nFreq: {freq}'.format(freq=self.freqstr)
 
         # display as values, not quoted
         result = result.replace("'", "")

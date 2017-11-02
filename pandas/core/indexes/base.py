@@ -1230,9 +1230,9 @@ class Index(IndexOpsMixin, PandasObject):
 
         if name is None:
             name = type(self).__name__
-        return '{name}: {len} entries{summary}'.format(name=name,
-                                                       len=len(self),
-                                                       summary=index_summary)
+        return u'{name}: {len} entries{summary}'.format(name=name,
+                                                        len=len(self),
+                                                        summary=index_summary)
 
     def _mpl_repr(self):
         # how to represent ourselves to matplotlib

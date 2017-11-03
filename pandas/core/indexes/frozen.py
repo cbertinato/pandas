@@ -115,7 +115,7 @@ class FrozenNDArray(PandasObject, np.ndarray):
         """
         prepr = pprint_thing(self, escape_chars=('\t', '\r', '\n'),
                              quote_strings=True)
-        return ("{name}({prepr}, dtype='{typ}')"
+        return (u"{name}({prepr}, dtype='{typ}')"
                 .format(name=type(self).__name__, prepr=prepr, typ=self.dtype))
 
     def searchsorted(self, v, side='left', sorter=None):

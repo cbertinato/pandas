@@ -58,8 +58,8 @@ def _get_next_label(label):
     elif is_float_dtype(dtype):
         return np.nextafter(label, np.infty)
     else:
-        raise TypeError('cannot determine next label for type %r'
-                        % type(label))
+        raise TypeError('cannot determine next label for type {typ!r}'
+                        .format(typ=type(label)))
 
 
 def _get_prev_label(label):
@@ -73,8 +73,8 @@ def _get_prev_label(label):
     elif is_float_dtype(dtype):
         return np.nextafter(label, -np.infty)
     else:
-        raise TypeError('cannot determine next label for type %r'
-                        % type(label))
+        raise TypeError('cannot determine next label for type {typ!r}'
+                        .format(typ=type(label)))
 
 
 def _get_interval_closed_bounds(interval):
@@ -209,9 +209,9 @@ class IntervalIndex(IntervalMixin, Index):
             left = left.astype(right.dtype)
 
         if type(left) != type(right):
-            raise ValueError("must not have differing left [{}] "
-                             "and right [{}] types".format(
-                                 type(left), type(right)))
+            raise ValueError("must not have differing left [{ltyp}] "
+                             "and right [{rtyp}] types".format(
+                                 ltyp=type(left), rtyp=type(right)))
 
         if isinstance(left, ABCPeriodIndex):
             raise ValueError("Period dtypes are not supported, "
@@ -256,7 +256,8 @@ class IntervalIndex(IntervalMixin, Index):
         Verify that the IntervalIndex is valid.
         """
         if self.closed not in _VALID_CLOSED:
-            raise ValueError("invalid options for 'closed': %s" % self.closed)
+            raise ValueError("invalid options for 'closed': {opts}"
+                             .format(opts=self.closed))
         if len(self.left) != len(self.right):
             raise ValueError('left and right must have the same length')
         left_mask = notna(self.left)
@@ -582,7 +583,8 @@ class IntervalIndex(IntervalMixin, Index):
         elif is_categorical_dtype(dtype):
             from pandas import Categorical
             return Categorical(self, ordered=True)
-        raise ValueError('Cannot cast IntervalIndex to dtype %s' % dtype)
+        raise ValueError('Cannot cast IntervalIndex to dtype {typ}'
+                         .format(typ=dtype))
 
     @cache_readonly
     def dtype(self):
@@ -843,7 +845,7 @@ class IntervalIndex(IntervalMixin, Index):
                 # we didn't find exact intervals
                 # or are non-unique
                 raise ValueError("unable to slice with "
-                                 "this key: {}".format(key))
+                                 "this key: {key}".format(key=key))
 
         else:
             loc = self.get_loc(key)
@@ -1079,12 +1081,12 @@ class IntervalIndex(IntervalMixin, Index):
                 n = min(max_seq_items // 2, 10)
                 head = [formatter(x) for x in self[:n]]
                 tail = [formatter(x) for x in self[-n:]]
-                summary = '[{} ... {}]'.format(', '.join(head),
-                                               ', '.join(tail))
+                summary = '[{head} ... {tail}]'.format(head=', '.join(head),
+                                                       tail=', '.join(tail))
             else:
                 head = []
                 tail = [formatter(x) for x in self]
-                summary = '[{}]'.format(', '.join(tail))
+                summary = '[{tail}]'.format(tail=', '.join(tail))
 
         return summary + self._format_space()
 
@@ -1092,11 +1094,12 @@ class IntervalIndex(IntervalMixin, Index):
         attrs = [('closed', repr(self.closed))]
         if self.name is not None:
             attrs.append(('name', default_pprint(self.name)))
-        attrs.append(('dtype', "'%s'" % self.dtype))
+        attrs.append(('dtype', "'{typ}'".format(typ=self.dtype)))
         return attrs
 
     def _format_space(self):
-        return "\n%s" % (' ' * (len(self.__class__.__name__) + 1))
+        return ("\n{spaces}"
+                .format(spaces=' ' * (len(self.__class__.__name__) + 1)))
 
     def argsort(self, *args, **kwargs):
         return np.lexsort((self.right, self.left))

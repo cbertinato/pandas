@@ -169,13 +169,14 @@ class MultiIndex(Index):
         label_length = len(self.labels[0])
         for i, (level, label) in enumerate(zip(levels, labels)):
             if len(label) != label_length:
-                raise ValueError("Unequal label lengths: %s" %
-                                 ([len(lab) for lab in labels]))
+                raise ValueError("Unequal label lengths: {lens}"
+                                 .format(lens=[len(lab) for lab in labels]))
             if len(label) and label.max() >= len(level):
-                raise ValueError("On level %d, label max (%d) >= length of"
-                                 " level  (%d). NOTE: this index is in an"
-                                 " inconsistent state" % (i, label.max(),
-                                                          len(level)))
+                raise ValueError("On level {lvl}, label max ({max}) >= length "
+                                 "of level  ({len}). NOTE: this index is in an"
+                                 " inconsistent state".format(lvl=i,
+                                                              max=label.max(),
+                                                              len=len(level)))
 
     def _get_levels(self):
         return self._levels
@@ -517,7 +518,8 @@ class MultiIndex(Index):
         return attrs
 
     def _format_space(self):
-        return "\n%s" % (' ' * (len(self.__class__.__name__) + 1))
+        return ("\n{spaces}"
+                .format(spaces=' ' * (len(self.__class__.__name__) + 1)))
 
     def _format_data(self, name=None):
         # we are formatting thru the attributes
@@ -639,23 +641,25 @@ class MultiIndex(Index):
         try:
             count = self.names.count(level)
             if count > 1:
-                raise ValueError('The name %s occurs multiple times, use a '
-                                 'level number' % level)
+                raise ValueError('The name {lvl} occurs multiple times, use a '
+                                 'level number'.format(lvl=level))
             level = self.names.index(level)
         except ValueError:
             if not isinstance(level, int):
-                raise KeyError('Level %s not found' % str(level))
+                raise KeyError('Level {lvl!s} not found'.format(lvl=level))
             elif level < 0:
                 level += self.nlevels
                 if level < 0:
                     orig_level = level - self.nlevels
-                    raise IndexError('Too many levels: Index has only %d '
-                                     'levels, %d is not a valid level number' %
-                                     (self.nlevels, orig_level))
+                    raise IndexError('Too many levels: Index has only {nlvls} '
+                                     'levels, {orig} is not a valid level '
+                                     'number'.format(nlvls=self.nlevels,
+                                                     orig=orig_level))
             # Note: levels are zero-based
             elif level >= self.nlevels:
-                raise IndexError('Too many levels: Index has only %d levels, '
-                                 'not %d' % (self.nlevels, level + 1))
+                raise IndexError('Too many levels: Index has only {nlvls} '
+                                 'levels, not {lvl}'.format(nlvls=self.nlevels,
+                                                            lvl=level + 1))
         return level
 
     _tuples = None
@@ -822,7 +826,7 @@ class MultiIndex(Index):
         elif how == 'all':
             indexer = np.all(nans, axis=0)
         else:
-            raise ValueError("invalid how option: {0}".format(how))
+            raise ValueError("invalid how option: {how}".format(how=how))
 
         new_labels = [label[~indexer] for label in self.labels]
         return self.copy(labels=new_labels, deep=True)
@@ -1542,8 +1546,8 @@ class MultiIndex(Index):
             mask = indexer == -1
             if mask.any():
                 if errors != 'ignore':
-                    raise ValueError('labels %s not contained in axis' %
-                                     labels[mask])
+                    raise ValueError('labels {labels} not contained in axis'
+                                     .format(labels=labels[mask]))
                 indexer = indexer[~mask]
         except Exception:
             pass
@@ -1568,7 +1572,8 @@ class MultiIndex(Index):
                     loc = loc.nonzero()[0]
                     inds.extend(loc)
                 else:
-                    msg = 'unsupported indexer of type {}'.format(type(loc))
+                    msg = ('unsupported indexer of type {typ}'
+                           .format(typ=type(loc)))
                     raise AssertionError(msg)
             except KeyError:
                 if errors != 'ignore':
@@ -1675,8 +1680,8 @@ class MultiIndex(Index):
         order = [self._get_level_number(i) for i in order]
         if len(order) != self.nlevels:
             raise AssertionError('Length of order must be same as '
-                                 'number of levels (%d), got %d' %
-                                 (self.nlevels, len(order)))
+                                 'number of levels ({nlvls}), got {len}'
+                                 .format(nlvls=self.nlevels, len=len(order)))
         new_levels = [self.levels[i] for i in order]
         new_labels = [self.labels[i] for i in order]
         new_names = [self.names[i] for i in order]
@@ -1803,7 +1808,7 @@ class MultiIndex(Index):
             check = self.levels[0].get_indexer(keyarr)
             mask = check == -1
             if mask.any():
-                raise KeyError('%s not in index' % keyarr[mask])
+                raise KeyError('{key} not in index'.format(key=keyarr[mask]))
 
         return indexer, keyarr
 
@@ -1982,9 +1987,9 @@ class MultiIndex(Index):
     def _partial_tup_index(self, tup, side='left'):
         if len(tup) > self.lexsort_depth:
             raise UnsortedIndexError(
-                'Key length (%d) was greater than MultiIndex'
-                ' lexsort depth (%d)' %
-                (len(tup), self.lexsort_depth))
+                'Key length ({len}) was greater than MultiIndex'
+                ' lexsort depth ({depth})'.format(len=len(tup),
+                                                  depth=self.lexsort_depth))
 
         n = len(tup)
         start, end = 0, len(self)
@@ -1994,7 +1999,8 @@ class MultiIndex(Index):
 
             if lab not in lev:
                 if not lev.is_type_compatible(lib.infer_dtype([lab])):
-                    raise TypeError('Level type mismatch: %s' % lab)
+                    raise TypeError('Level type mismatch: {lab}'
+                                    .format(lab=lab))
 
                 # short circuit
                 loc = lev.searchsorted(lab, side=side)
@@ -2073,8 +2079,8 @@ class MultiIndex(Index):
 
         keylen = len(key)
         if self.nlevels < keylen:
-            raise KeyError('Key length ({0}) exceeds index depth ({1})'
-                           ''.format(keylen, self.nlevels))
+            raise KeyError('Key length ({len}) exceeds index depth ({depth})'
+                           ''.format(len=keylen, depth=self.nlevels))
 
         if keylen == self.nlevels and self.is_unique:
 
@@ -2407,9 +2413,10 @@ class MultiIndex(Index):
         true_slices = [i for (i, s) in enumerate(is_true_slices(seq)) if s]
         if true_slices and true_slices[-1] >= self.lexsort_depth:
             raise UnsortedIndexError('MultiIndex slicing requires the index '
-                                     'to be lexsorted: slicing on levels {0}, '
-                                     'lexsort depth {1}'
-                                     .format(true_slices, self.lexsort_depth))
+                                     'to be lexsorted: slicing on levels '
+                                     '{lvls}, lexsort depth {depth}'
+                                     .format(lvls=true_slices,
+                                             depth=self.lexsort_depth))
         # indexer
         # this is the list of all values that we want to select
         n = len(self)
@@ -2666,8 +2673,9 @@ class MultiIndex(Index):
     @Appender(_index_shared_docs['astype'])
     def astype(self, dtype, copy=True):
         if not is_object_dtype(np.dtype(dtype)):
-            raise TypeError('Setting %s dtype to anything other than object '
-                            'is not supported' % self.__class__)
+            raise TypeError('Setting {typ} dtype to anything other than '
+                            'object is not supported'
+                            .format(typ=self.__class__))
         elif copy is True:
             return self._shallow_copy()
         return self

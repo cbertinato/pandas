@@ -191,6 +191,18 @@ class TestDatetimeIndexSetOps(object):
             assert result.freq is None
             assert result.tz == expected.tz
 
+    def test_intersection_equal(self):
+        # GH 24362: tz-aware DTI intersection raises AttributeError when
+        # values are the same but timezones are different
+        rng1 = pd.date_range('2000', periods=4, tz="US/Central")
+        rng2 = rng1.tz_convert("US/Eastern")
+        expected = pd.DatetimeIndex(start=datetime(2000, 1, 1), periods=4,
+                                    freq='D', tz="US/Central")
+        result = rng1 & rng2
+
+        tm.assert_index_equal(result, expected)
+        assert result.tz == rng1.tz
+
     def test_intersection_empty(self):
         # empty same freq GH2129
         rng = date_range('6/1/2000', '6/15/2000', freq='T')

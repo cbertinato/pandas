@@ -556,9 +556,6 @@ class DatetimeIndex(DatetimeArray, DatetimeIndexOpsMixin, Int64Index):
         """
         self._assert_can_do_setop(other)
 
-        if self.equals(other):
-            return self._get_reconciled_name_object(other)
-
         if not isinstance(other, DatetimeIndex):
             try:
                 other = DatetimeIndex(other)
@@ -569,6 +566,9 @@ class DatetimeIndex(DatetimeArray, DatetimeIndexOpsMixin, Int64Index):
                 if result.freq is None:
                     result.freq = to_offset(result.inferred_freq)
             return result
+
+        elif self.astype('O').equals(other.astype('O')):
+            return self._get_reconciled_name_object(other)
 
         elif (other.freq is None or self.freq is None or
               other.freq != self.freq or
